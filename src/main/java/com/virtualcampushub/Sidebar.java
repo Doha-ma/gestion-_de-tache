@@ -15,17 +15,19 @@ import javafx.scene.paint.Color;
 public class Sidebar {
     public enum Section {
         DASHBOARD,
+        CHAT,
         COURSES,
         EVENTS,
-        MESSAGING,
+        LOGIN,
         PROFILE
     }
 
     private final VBox content;
     private final SectionItem dashboard;
+    private final SectionItem chat;
     private final SectionItem courses;
     private final SectionItem events;
-    private final SectionItem messaging;
+    private final SectionItem login;
     private final SectionItem profile;
 
     public Sidebar(ViewManager viewManager) {
@@ -37,15 +39,16 @@ public class Sidebar {
         title.getStyleClass().add("sidebar-title");
 
         dashboard = new SectionItem("Dashboard", Section.DASHBOARD, viewManager::showDashboard);
+        chat = new SectionItem("Messagerie", Section.CHAT, viewManager::showChat);
         courses = new SectionItem("Cours", Section.COURSES, viewManager::showCourses);
         events = new SectionItem("Événements", Section.EVENTS, viewManager::showEvents);
-        messaging = new SectionItem("Messagerie", Section.MESSAGING, viewManager::showChat);
+        login = new SectionItem("Connexion", Section.LOGIN, viewManager::showLogin);
         profile = new SectionItem("Profil", Section.PROFILE, viewManager::showProfile);
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        content.getChildren().addAll(title, dashboard, courses, events, messaging, spacer, profile);
+        content.getChildren().addAll(title, dashboard, chat, courses, events, login, spacer, profile);
     }
 
     public VBox getContent() {
@@ -54,9 +57,10 @@ public class Sidebar {
 
     public void setActive(Section section) {
         dashboard.setActive(section == Section.DASHBOARD);
+        chat.setActive(section == Section.CHAT);
         courses.setActive(section == Section.COURSES);
         events.setActive(section == Section.EVENTS);
-        messaging.setActive(section == Section.MESSAGING);
+        login.setActive(section == Section.LOGIN);
         profile.setActive(section == Section.PROFILE);
     }
 

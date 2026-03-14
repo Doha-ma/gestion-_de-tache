@@ -1,6 +1,8 @@
 com\virtualcampushub\ProfileView.class
 com\virtualcampushub\ViewManager.class
+com\virtualcampushub\UserDAO$User.class
 com\virtualcampushub\TopBar.class
+com\virtualcampushub\UserDAO.class
 com\virtualcampushub\EventsView.class
 com\virtualcampushub\ChatView$ChatMessage.class
 com\virtualcampushub\CoursesView.class
@@ -11,7 +13,10 @@ com\virtualcampushub\ChatView$1.class
 com\virtualcampushub\Sidebar$SectionItem.class
 module-info.class
 com\virtualcampushub\ChatView.class
+com\virtualcampushub\LoginView.class
+com\virtualcampushub\RegisterView.class
 com\virtualcampushub\CoursesView$Course.class
+com\virtualcampushub\DatabaseConnection.class
 com\virtualcampushub\EventsView$EventItem.class
 com\virtualcampushub\DashboardView.class
 com\virtualcampushub\EventsView$1.class

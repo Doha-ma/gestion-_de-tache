@@ -1,10 +1,9 @@
 package com.virtualcampushub;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -35,9 +34,9 @@ public class DashboardView {
         cardPane.getStyleClass().add("card-pane");
 
         cardPane.getChildren().addAll(
-                createCard("Cours en cours", "12", "Suivez votre progression"),
-                createCard("Prochains événements", "5", "Restez à jour"),
-                createCard("Tâches restantes", "3", "Ne ratez rien"));
+                createCard("Cours en cours", "12", "Suivez votre progression", "card-blue"),
+                createCard("Prochains événements", "5", "Restez à jour", "card-purple"),
+                createCard("Tâches restantes", "3", "Ne ratez rien", "card-green"));
 
         content.getChildren().addAll(header, cardPane, createProgressChart());
         animateCards(cardPane);
@@ -47,10 +46,10 @@ public class DashboardView {
         return content;
     }
 
-    private VBox createCard(String title, String value, String subtitle) {
-        VBox card = new VBox(8);
-        card.getStyleClass().add("dashboard-card");
-        card.setPadding(new Insets(14));
+    private VBox createCard(String title, String value, String subtitle, String styleClass) {
+        VBox card = new VBox(10);
+        card.getStyleClass().addAll("dashboard-card", styleClass);
+        card.setPadding(new Insets(18));
 
         Label t = new Label(title);
         t.getStyleClass().add("card-title");
@@ -62,10 +61,46 @@ public class DashboardView {
         s.getStyleClass().add("card-subtitle");
 
         card.getChildren().addAll(t, v, s);
-        card.setEffect(new DropShadow(14, Color.rgb(0, 0, 0, 0.12)));
 
-        card.setOnMouseEntered(e -> card.setTranslateY(-4));
-        card.setOnMouseExited(e -> card.setTranslateY(0));
+        // Améliorer les effets hover avec des animations fluides
+        card.setOnMouseEntered(e -> {
+            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), card);
+            scaleUp.setToX(1.03);
+            scaleUp.setToY(1.03);
+
+            TranslateTransition liftUp = new TranslateTransition(Duration.millis(200), card);
+            liftUp.setToY(-6);
+
+            ParallelTransition hoverIn = new ParallelTransition(scaleUp, liftUp);
+            hoverIn.play();
+        });
+
+        card.setOnMouseExited(e -> {
+            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(200), card);
+            scaleDown.setToX(1.0);
+            scaleDown.setToY(1.0);
+
+            TranslateTransition liftDown = new TranslateTransition(Duration.millis(200), card);
+            liftDown.setToY(0);
+
+            ParallelTransition hoverOut = new ParallelTransition(scaleDown, liftDown);
+            hoverOut.play();
+        });
+
+        // Animation de clic
+        card.setOnMousePressed(e -> {
+            ScaleTransition press = new ScaleTransition(Duration.millis(100), card);
+            press.setToX(0.97);
+            press.setToY(0.97);
+            press.play();
+        });
+
+        card.setOnMouseReleased(e -> {
+            ScaleTransition release = new ScaleTransition(Duration.millis(100), card);
+            release.setToX(1.03);
+            release.setToY(1.03);
+            release.play();
+        });
 
         return card;
     }
@@ -96,13 +131,31 @@ public class DashboardView {
 
     private void animateCards(FlowPane cardPane) {
         for (int i = 0; i < cardPane.getChildren().size(); i++) {
-            Region card = (Region) cardPane.getChildren().get(i);
+            Node card = cardPane.getChildren().get(i);
+
+            // Position initiale
             card.setOpacity(0);
-            Timeline timeline = new Timeline(
-                    new KeyFrame(Duration.ZERO, new KeyValue(card.opacityProperty(), 0)),
-                    new KeyFrame(Duration.millis(400 + i * 120), new KeyValue(card.opacityProperty(), 1))
+            card.setScaleX(0.8);
+            card.setScaleY(0.8);
+            card.setTranslateY(20);
+
+            // Animation d'entrée avec délai échelonné
+            Timeline cardAnimation = new Timeline();
+            KeyFrame kf1 = new KeyFrame(Duration.millis(200 + i * 100),
+                new KeyValue(card.opacityProperty(), 0.0),
+                new KeyValue(card.scaleXProperty(), 0.8),
+                new KeyValue(card.scaleYProperty(), 0.8),
+                new KeyValue(card.translateYProperty(), 20)
             );
-            timeline.play();
+            KeyFrame kf2 = new KeyFrame(Duration.millis(500 + i * 100),
+                new KeyValue(card.opacityProperty(), 1.0, Interpolator.EASE_OUT),
+                new KeyValue(card.scaleXProperty(), 1.0, Interpolator.EASE_OUT),
+                new KeyValue(card.scaleYProperty(), 1.0, Interpolator.EASE_OUT),
+                new KeyValue(card.translateYProperty(), 0, Interpolator.EASE_OUT)
+            );
+
+            cardAnimation.getKeyFrames().addAll(kf1, kf2);
+            cardAnimation.play();
         }
     }
 
