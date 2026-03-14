@@ -1,14 +1,12 @@
 package com.virtualcampushub;
 
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -21,7 +19,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ChatView {
-    private final BorderPane content;
+    private final ViewManager viewManager;
+    private ScrollPane root;
     private ListView<ChatMessage> messageListView;
     private TextField messageInput;
     private Button sendButton;
@@ -34,11 +33,13 @@ public class ChatView {
     private boolean isConnected = false;
     private String currentUsername;
 
-    public ChatView(String username) {
-        this.currentUsername = username;
-        content = new BorderPane();
-        content.getStyleClass().add("chat-view");
-        content.setPadding(new Insets(20));
+    public ChatView(ViewManager viewManager) {
+        this.viewManager = viewManager;
+        this.currentUsername = viewManager.getCurrentUsername();
+        root = new ScrollPane();
+        root.setFitToWidth(true);
+        root.setStyle("-fx-background-color: #0f0e1a; -fx-background: #0f0e1a;");
+        root.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         executor = Executors.newCachedThreadPool();
         messages = FXCollections.observableArrayList();
@@ -48,6 +49,11 @@ public class ChatView {
     }
 
     private void setupUI() {
+        VBox content = new VBox(16);
+        content.setPadding(new Insets(20));
+        content.getStyleClass().add("view");
+        content.setStyle("-fx-background-color: #0f0e1a;");
+
         // Header
         VBox headerBox = new VBox(4);
         headerBox.getStyleClass().add("view-header");
@@ -56,6 +62,7 @@ public class ChatView {
         Label header = new Label("Messagerie Instantanée - " + currentUsername);
         header.getStyleClass().add("view-title");
         header.setFont(Font.font("Inter", FontWeight.BOLD, 20));
+        header.setTextFill(Color.WHITE);
 
         Label statusLabel = new Label("Connecté au réseau local");
         statusLabel.getStyleClass().add("chat-status");
@@ -128,9 +135,9 @@ public class ChatView {
         inputBar.setAlignment(Pos.CENTER_LEFT);
         inputBar.setPadding(new Insets(12, 0, 0, 0));
 
-        content.setTop(headerBox);
-        content.setCenter(messageListView);
-        content.setBottom(inputBar);
+        content.getChildren().addAll(header, messageListView, inputBar);
+
+        root.setContent(content);
 
         // Add welcome message
         addMessage("Système", "Bienvenue dans le chat, " + currentUsername + "!", false);
@@ -158,27 +165,61 @@ public class ChatView {
     }
 
     private void animateMessage() {
-        TranslateTransition tt = new TranslateTransition(Duration.millis(200));
-        tt.setByY(-5);
-        tt.setAutoReverse(true);
-        tt.setCycleCount(2);
-        tt.play();
+        // Get the last added message cell
+        int lastIndex = messages.size() - 1;
+        messageListView.scrollTo(lastIndex);
+
+        // Find the cell and animate it
+        messageListView.layout();
+        messageListView.getChildrenUnmodifiable().forEach(node -> {
+            if (node instanceof javafx.scene.control.ListCell) {
+                javafx.scene.control.ListCell<?> cell = (javafx.scene.control.ListCell<?>) node;
+                if (cell.getIndex() == lastIndex) {
+                    // Animation d'apparition sophistiquée
+                    cell.setOpacity(0);
+                    cell.setScaleX(0.8);
+                    cell.setScaleY(0.8);
+                    cell.setTranslateY(20);
+
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(400), cell);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+
+                    ScaleTransition scaleIn = new ScaleTransition(Duration.millis(400), cell);
+                    scaleIn.setFromX(0.8);
+                    scaleIn.setFromY(0.8);
+                    scaleIn.setToX(1.0);
+                    scaleIn.setToY(1.0);
+
+                    TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), cell);
+                    slideIn.setFromY(20);
+                    slideIn.setToY(0);
+
+                    ParallelTransition messageAnimation = new ParallelTransition(fadeIn, scaleIn, slideIn);
+                    messageAnimation.setInterpolator(Interpolator.EASE_OUT);
+                    messageAnimation.play();
+                }
+            }
+        });
     }
 
     private void startChatServer() {
         executor.submit(() -> {
             try {
-                serverSocket = new ServerSocket(8889); // Different port from login
-                System.out.println("Serveur de chat démarré sur le port 8889");
+                // Start server socket for receiving connections
+                serverSocket = new ServerSocket(8888);
+                System.out.println("Serveur de chat démarré sur le port 8888");
 
-                while (!Thread.currentThread().isInterrupted()) {
+                while (isConnected) {
                     try {
                         clientSocket = serverSocket.accept();
-                        System.out.println("Nouvelle connexion chat: " + clientSocket.getInetAddress());
-                        handleChatConnection(clientSocket);
+                        System.out.println("Nouvelle connexion acceptée: " + clientSocket.getInetAddress());
+
+                        // Handle the connection in a separate thread
+                        handleClientConnection(clientSocket);
                     } catch (IOException e) {
-                        if (!Thread.currentThread().isInterrupted()) {
-                            System.out.println("Erreur d'acceptation: " + e.getMessage());
+                        if (isConnected) {
+                            System.out.println("Erreur lors de l'acceptation d'une connexion: " + e.getMessage());
                         }
                     }
                 }
@@ -188,49 +229,49 @@ public class ChatView {
         });
     }
 
-    private void handleChatConnection(Socket socket) {
+    private void handleClientConnection(Socket socket) {
         executor.submit(() -> {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                 PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+            try {
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream(), true);
 
-                String message;
-                while ((message = reader.readLine()) != null) {
-                    final String receivedMessage = message;
+                String receivedMessage;
+                while ((receivedMessage = in.readLine()) != null) {
+                    final String msg = receivedMessage;
                     javafx.application.Platform.runLater(() -> {
-                        addMessage("Utilisateur distant", receivedMessage, false);
+                        addMessage("Utilisateur distant", msg, false);
                     });
                 }
-
             } catch (IOException e) {
-                System.err.println("Erreur connexion chat: " + e.getMessage());
+                System.err.println("Erreur connexion client: " + e.getMessage());
             }
         });
     }
 
     private void broadcastMessage(String message) {
-        // In a real implementation, this would send to all connected clients
-        System.out.println("Broadcasting: " + message);
+        if (out != null) {
+            out.println(message);
+        }
     }
 
-    public BorderPane getContent() {
-        return content;
+    public ScrollPane getView() {
+        return root;
     }
 
     public void shutdown() {
+        isConnected = false;
         try {
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
-            }
-            if (clientSocket != null && !clientSocket.isClosed()) {
-                clientSocket.close();
-            }
+            if (serverSocket != null) serverSocket.close();
+            if (clientSocket != null) clientSocket.close();
+            if (out != null) out.close();
+            if (in != null) in.close();
         } catch (IOException e) {
             System.err.println("Erreur fermeture chat: " + e.getMessage());
         }
         executor.shutdown();
     }
 
-    private static class ChatMessage {
+    public static class ChatMessage {
         private final String sender;
         private final String content;
         private final boolean isOwnMessage;
@@ -243,20 +284,9 @@ public class ChatView {
             this.timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
         }
 
-        public String getSender() {
-            return sender;
-        }
-
-        public String getContent() {
-            return content;
-        }
-
-        public boolean isOwnMessage() {
-            return isOwnMessage;
-        }
-
-        public String getTimestamp() {
-            return timestamp;
-        }
+        public String getSender() { return sender; }
+        public String getContent() { return content; }
+        public boolean isOwnMessage() { return isOwnMessage; }
+        public String getTimestamp() { return timestamp; }
     }
 }

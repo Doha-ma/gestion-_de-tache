@@ -1,435 +1,250 @@
-/* ========================================
-   Modern Light Theme (UI/UX amélioration)
-   ======================================== */
+/* =========================================
+   VIRTUAL CAMPUS HUB - Dark Theme v2.0
+   ========================================= */
+
+/* ─────────────────────────────────────────
+   RESET & BASE
+   ───────────────────────────────────────── */
+* {
+    -fx-box-sizing: border-box;
+}
 
 .root {
-    -fx-background-color: linear-gradient(135deg, #f4f7ff 0%, #ffffff 100%);
-    -fx-font-family: "Inter", system, sans-serif;
-    -fx-text-fill: #1f2937;
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+    -fx-background-color: #0f0e1a;
 }
 
-.view {
-    -fx-padding: 22px;
+/* ─────────────────────────────────────────
+   SCROLLBARS DARK
+   ───────────────────────────────────────── */
+.scroll-bar:vertical {
     -fx-background-color: transparent;
+    -fx-pref-width: 6;
 }
 
-/* Sidebar */
-.sidebar {
-    -fx-background-color: rgba(255, 255, 255, 0.92);
-    -fx-border-color: rgba(148, 163, 184, 0.25);
-    -fx-border-width: 0 1px 0 0;
-    -fx-pref-width: 280px;
-    -fx-padding: 26px 18px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 12, 0, 0, 2);
+.scroll-bar:vertical .track {
+    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-radius: 3;
 }
 
-.sidebar-title {
-    -fx-text-fill: #0f172a;
-    -fx-font-size: 18px;
-    -fx-font-weight: 800;
-    -fx-padding: 0 0 18px 0;
+.scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-background-radius: 3;
 }
 
-.sidebar-item {
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(108,99,255,0.6);
+}
+
+.scroll-bar:horizontal {
+    -fx-pref-height: 0;
+    -fx-opacity: 0;
+}
+
+.scroll-pane {
+    -fx-background-color: #0f0e1a;
+    -fx-background: #0f0e1a;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #0f0e1a;
+}
+
+/* ─────────────────────────────────────────
+   TABLE VIEW
+   ───────────────────────────────────────── */
+.table-view {
+    -fx-background-color: #1e1d2e;
+    -fx-table-cell-border-color: rgba(255,255,255,0.05);
+    -fx-background-radius: 12;
+}
+
+.table-view .column-header {
+    -fx-background-color: rgba(108,99,255,0.1);
+    -fx-border-color: rgba(255,255,255,0.06);
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: rgba(255,255,255,0.7);
+    -fx-font-weight: bold;
+    -fx-font-size: 12;
+}
+
+.table-row-cell {
     -fx-background-color: transparent;
-    -fx-padding: 12px 14px;
-    -fx-border-radius: 14px;
+    -fx-border-color: rgba(255,255,255,0.04);
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: rgba(108,99,255,0.08);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(108,99,255,0.2);
+}
+
+.table-row-cell .text {
+    -fx-fill: rgba(255,255,255,0.8);
+    -fx-font-size: 13;
+}
+
+/* ─────────────────────────────────────────
+   BUTTONS GLOBAUX
+   ───────────────────────────────────────── */
+.btn-primary {
+    -fx-background-color: linear-gradient(to right, #6C63FF, #3b5bdb);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
     -fx-cursor: hand;
-    -fx-alignment: center-left;
-    -fx-spacing: 10;
-    -fx-transition: all 0.2s ease;
 }
 
-.sidebar-item:hover {
-    -fx-background-color: rgba(99, 102, 241, 0.12);
+.btn-primary:hover {
+    -fx-background-color: linear-gradient(to right, #7c74ff, #4c6aed);
+    -fx-effect: dropshadow(gaussian, rgba(108,99,255,0.5), 12, 0, 0, 3);
 }
 
-.sidebar-item.active {
-    -fx-background-color: rgba(99, 102, 241, 0.22);
-}
-
-.sidebar-item-label {
-    -fx-text-fill: #334155;
-    -fx-font-size: 14px;
-    -fx-font-weight: 600;
-}
-
-/* Topbar */
-.topbar {
-    -fx-background-color: rgba(255, 255, 255, 0.82);
-    -fx-border-color: rgba(148, 163, 184, 0.25);
-    -fx-border-width: 0 0 1px 0;
-    -fx-padding: 16px 24px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 10, 0, 0, 2);
-}
-
-.topbar-title {
-    -fx-text-fill: #0f172a;
-    -fx-font-size: 18px;
-    -fx-font-weight: 700;
-}
-
-.topbar-search {
-    -fx-background-color: rgba(243, 245, 255, 0.8);
-    -fx-border-color: rgba(148, 163, 184, 0.5);
-    -fx-border-radius: 12px;
-    -fx-background-radius: 12px;
-    -fx-padding: 10px 14px;
-    -fx-pref-width: 250px;
-    -fx-font-size: 13px;
-    -fx-text-fill: #1f2937;
-}
-
-.topbar-search:focused {
-    -fx-border-color: rgba(99, 102, 241, 0.7);
-    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.2), 8, 0, 0, 2);
-}
-
-.topbar-button {
-    -fx-background-color: rgba(99, 102, 241, 0.12);
-    -fx-text-fill: #1f2937;
-    -fx-background-radius: 14px;
-    -fx-padding: 10px 12px;
-    -fx-font-size: 14px;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 6, 0, 0, 1);
-}
-
-.topbar-button:hover {
-    -fx-background-color: rgba(99, 102, 241, 0.22);
-}
-
-/* Dashboard cards */
-.card-pane {
-    -fx-padding: 10 0 0 0;
-}
-
-.dashboard-card {
-    -fx-background-color: #ffffff;
-    -fx-border-color: rgba(148, 163, 184, 0.18);
-    -fx-border-width: 1px;
-    -fx-background-radius: 18px;
-    -fx-border-radius: 18px;
-    -fx-padding: 18px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.07), 12, 0, 0, 4);
-    -fx-min-width: 240px;
-    -fx-max-width: 280px;
-    -fx-pref-width: 260px;
-}
-
-.dashboard-card:hover {
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 16, 0, 0, 5);
-    -fx-translate-y: -4px;
-}
-
-.dashboard-card.card-blue {
-    -fx-background-color: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-    -fx-text-fill: #ffffff;
-}
-
-.dashboard-card.card-purple {
-    -fx-background-color: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-    -fx-text-fill: #ffffff;
-}
-
-.dashboard-card.card-green {
-    -fx-background-color: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-    -fx-text-fill: #ffffff;
-}
-
-.card-title {
-    -fx-font-size: 16px;
-    -fx-font-weight: 700;
-    -fx-text-fill: inherit;
-}
-
-.card-value {
-    -fx-font-size: 36px;
-    -fx-font-weight: 800;
-    -fx-text-fill: inherit;
-}
-
-.card-subtitle {
-    -fx-font-size: 13px;
-    -fx-text-fill: rgba(255, 255, 255, 0.85);
-}
-
-/* Login / Register */
-.login-view,
-.register-view {
-    -fx-background-color: linear-gradient(135deg, #f3f6ff 0%, #ffffff 100%);
-}
-
-.login-form,
-.register-form {
-    -fx-background-color: rgba(255, 255, 255, 0.9);
-    -fx-background-radius: 24px;
-    -fx-border-color: rgba(148, 163, 184, 0.25);
-    -fx-border-width: 1px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 18, 0, 0, 6);
-    -fx-padding: 42px 48px;
-}
-
-.login-title,
-.register-title {
-    -fx-text-fill: #0f172a;
-    -fx-font-size: 32px;
-    -fx-font-weight: 800;
-}
-
-.login-subtitle,
-.register-subtitle {
-    -fx-text-fill: rgba(31, 41, 55, 0.75);
-    -fx-font-size: 16px;
-}
-
-.login-label,
-.register-label {
-    -fx-text-fill: #475569;
-    -fx-font-weight: 600;
-}
-
-.login-input,
-.register-input,
-.topbar-search {
-    -fx-background-color: rgba(248, 250, 252, 0.9);
-    -fx-border-color: rgba(148, 163, 184, 0.5);
-    -fx-border-radius: 12px;
-    -fx-background-radius: 12px;
-    -fx-padding: 12px 14px;
-    -fx-font-size: 14px;
-    -fx-text-fill: #0f2937;
-    -fx-prompt-text-fill: #94a3b8;
-    -fx-border-width: 1px;
-    -fx-transition: all 0.2s ease;
-}
-
-.login-input:focused,
-.register-input:focused,
-.topbar-search:focused {
-    -fx-border-color: rgba(99, 102, 241, 0.7);
-    -fx-background-color: rgba(255, 255, 255, 0.95);
-    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.2), 8, 0, 0, 2);
-}
-
-.login-button,
-.register-button {
-    -fx-background-color: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    -fx-text-fill: #ffffff;
-    -fx-background-radius: 14px;
-    -fx-font-size: 16px;
-    -fx-font-weight: 700;
-    -fx-cursor: hand;
-    -fx-transition: all 0.25s ease;
-    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.25), 10, 0, 0, 4);
-    -fx-padding: 14px 24px;
-}
-
-.login-button:hover,
-.register-button:hover {
-    -fx-background-color: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-    -fx-transform: translateY(-1px);
-}
-
-.login-button:disabled,
-.register-button:disabled {
-    -fx-background-color: rgba(148, 163, 184, 0.4);
-    -fx-text-fill: rgba(148, 163, 184, 0.8);
-    -fx-cursor: default;
-    -fx-effect: none;
-}
-
-.register-link-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #4f46e5;
-    -fx-background-radius: 12px;
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-    -fx-cursor: hand;
-    -fx-transition: all 0.2s ease;
-    -fx-border-color: rgba(99, 102, 241, 0.4);
-    -fx-border-width: 1px;
-    -fx-border-radius: 12px;
-    -fx-padding: 10px 14px;
-}
-
-.register-link-button:hover {
-    -fx-background-color: rgba(99, 102, 241, 0.12);
-    -fx-border-color: rgba(99, 102, 241, 0.6);
-}
-
-.back-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #64748b;
-    -fx-font-size: 14px;
-    -fx-cursor: hand;
-    -fx-transition: all 0.2s ease;
-    -fx-padding: 10px 14px;
-}
-
-.back-button:hover {
-    -fx-background-color: rgba(148, 163, 184, 0.12);
-    -fx-text-fill: #334155;
-}
-
-.login-status,
-.register-status,
-.network-status {
-    -fx-text-alignment: center;
-    -fx-padding: 10px 0 0 0;
-    -fx-font-size: 13px;
-}
-
-/* Chat View Styles */
-.chat-view {
-    -fx-background-color: linear-gradient(135deg, #f3f6ff 0%, #ffffff 100%);
-}
-
-.chat-messages {
-    -fx-background-color: rgba(255, 255, 255, 0.8);
-    -fx-border-color: rgba(148, 163, 184, 0.3);
+.btn-danger {
+    -fx-background-color: rgba(255,107,107,0.15);
+    -fx-text-fill: #FF6B6B;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255,107,107,0.3);
+    -fx-border-radius: 10;
     -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+
+/* ─────────────────────────────────────────
+   DIALOG STYLES
+   ───────────────────────────────────────── */
+.dialog-pane {
+    -fx-background-color: #1e1d2e;
+    -fx-border-color: rgba(255,255,255,0.1);
     -fx-border-radius: 16;
     -fx-background-radius: 16;
-    -fx-padding: 14;
 }
 
-.chat-messages .list-cell {
-    -fx-background-color: transparent;
-    -fx-padding: 6 0 6 0;
+.dialog-pane .header-panel {
+    -fx-background-color: rgba(108,99,255,0.1);
+    -fx-background-radius: 14 14 0 0;
 }
 
-.chat-messages .list-cell:odd {
-    -fx-background-color: rgba(99, 102, 241, 0.06);
-}
-
-.chat-bubble-own {
-    -fx-background-color: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+.dialog-pane .header-panel .label {
     -fx-text-fill: white;
-    -fx-padding: 14 18 14 18;
-    -fx-background-radius: 18 18 4 18;
-    -fx-border-radius: 18 18 4 18;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 4, 0, 0, 2);
-    -fx-font-size: 14px;
-    -fx-font-family: "Inter", sans-serif;
-    -fx-max-width: 420px;
-}
-
-.chat-bubble-other {
-    -fx-background-color: rgba(255, 255, 255, 0.95);
-    -fx-text-fill: #1f2937;
-    -fx-padding: 14 18 14 18;
-    -fx-background-radius: 18 18 18 4;
-    -fx-border-radius: 18 18 18 4;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 4, 0, 0, 2);
-    -fx-font-size: 14px;
-    -fx-font-family: "Inter", sans-serif;
-    -fx-max-width: 420px;
-}
-
-.chat-timestamp {
-    -fx-text-fill: rgba(31, 41, 55, 0.6);
-    -fx-font-size: 10px;
-    -fx-padding: 2 0 0 0;
-}
-
-.chat-input {
-    -fx-background-color: rgba(255, 255, 255, 0.95);
-    -fx-border-color: rgba(148, 163, 184, 0.35);
-    -fx-border-width: 2;
-    -fx-border-radius: 30;
-    -fx-background-radius: 30;
-    -fx-padding: 0 18 0 18;
-    -fx-font-size: 14px;
-    -fx-font-family: "Inter", sans-serif;
-    -fx-prompt-text-fill: #94a3b8;
-    -fx-text-fill: #1f2937;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 3, 0, 0, 1);
-}
-
-.chat-input:focused {
-    -fx-border-color: rgba(99, 102, 241, 0.7);
-}
-
-.chat-send {
-    -fx-background-color: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-font-family: "Inter", sans-serif;
-    -fx-padding: 12 26 12 26;
-    -fx-background-radius: 30;
-    -fx-border-radius: 30;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0, 0, 1);
+}
+
+.dialog-pane .content {
+    -fx-text-fill: rgba(255,255,255,0.7);
+}
+
+.dialog-pane .button-bar .button {
+    -fx-background-color: #6C63FF;
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
     -fx-cursor: hand;
 }
 
-.chat-send:hover {
-    -fx-background-color: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+.dialog-pane .button-bar .button:cancel-button {
+    -fx-background-color: rgba(255,255,255,0.1);
 }
 
-.chat-send:pressed {
-    -fx-background-color: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+/* ─────────────────────────────────────────
+   SEPARATOR
+   ───────────────────────────────────────── */
+.separator .line {
+    -fx-border-color: rgba(255,255,255,0.08);
+    -fx-border-width: 0.5;
 }
 
-.chat-send:disabled {
-    -fx-background-color: rgba(148, 163, 184, 0.45);
-    -fx-text-fill: rgba(148, 163, 184, 0.75);
-    -fx-cursor: default;
-    -fx-effect: none;
+/* ─────────────────────────────────────────
+   TOOLTIPS
+   ───────────────────────────────────────── */
+.tooltip {
+    -fx-background-color: #252436;
+    -fx-text-fill: white;
+    -fx-font-size: 12;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255,255,255,0.1);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
 }
 
-/* Common animations */
-.fade-in {
-    -fx-opacity: 0;
-};
-
-.fade-in.visible {
-    -fx-opacity: 1;
-};
-
-.slide-in-left {
-    -fx-translate-x: -20px;
-    -fx-opacity: 0;
+/* ─────────────────────────────────────────
+   HYPERLINKS
+   ───────────────────────────────────────── */
+.hyperlink {
+    -fx-text-fill: #6C63FF;
+    -fx-border-color: transparent;
+    -fx-underline: false;
 }
 
-.slide-in-left.visible {
-    -fx-translate-x: 0;
-    -fx-opacity: 1;
+.hyperlink:hover {
+    -fx-text-fill: #a89cff;
+    -fx-underline: true;
 }
 
-.slide-in-right {
-    -fx-translate-x: 20px;
-    -fx-opacity: 0;
+/* ─────────────────────────────────────────
+   TEXT FIELDS
+   ───────────────────────────────────────── */
+.text-field, .password-field {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.3);
+    -fx-border-color: rgba(255,255,255,0.12);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 8 12 8 12;
 }
 
-.slide-in-right.visible {
-    -fx-translate-x: 0;
-    -fx-opacity: 1;
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #6C63FF;
+    -fx-effect: dropshadow(gaussian, rgba(108,99,255,0.25), 8, 0, 0, 0);
 }
 
-.bounce-in {
-    -fx-scale-x: 0.3;
-    -fx-scale-y: 0.3;
-    -fx-opacity: 0;
+/* ─────────────────────────────────────────
+   PROGRESS BAR
+   ───────────────────────────────────────── */
+.progress-bar {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-background-radius: 4;
+    -fx-pref-height: 6;
 }
 
-.bounce-in.visible {
-    -fx-scale-x: 1;
-    -fx-scale-y: 1;
-    -fx-opacity: 1;
+.progress-bar .bar {
+    -fx-background-color: #6C63FF;
+    -fx-background-radius: 4;
+    -fx-background-insets: 0;
 }
 
-.professional-entrance {
-    -fx-opacity: 0;
-    -fx-scale-x: 0.8;
-    -fx-scale-y: 0.8;
-    -fx-translate-x: 50px;
+/* ─────────────────────────────────────────
+   CONTEXT MENU
+   ───────────────────────────────────────── */
+.context-menu {
+    -fx-background-color: #252436;
+    -fx-border-color: rgba(255,255,255,0.1);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
 }
 
-.professional-entrance.visible {
-    -fx-opacity: 1;
-    -fx-scale-x: 1;
-    -fx-scale-y: 1;
-    -fx-translate-x: 0;
+.menu-item {
+    -fx-background-color: transparent;
+}
+
+.menu-item:hover {
+    -fx-background-color: rgba(108,99,255,0.2);
+}
+
+.menu-item .label {
+    -fx-text-fill: rgba(255,255,255,0.8);
+    -fx-font-size: 12;
+}
+
+/* ─────────────────────────────────────────
+   ALERT
+   ───────────────────────────────────────── */
+.alert .content.label {
+    -fx-text-fill: rgba(255,255,255,0.7);
 }

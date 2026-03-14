@@ -1,155 +1,143 @@
 package com.virtualcampushub;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.*;
 
 public class UserDAO {
 
-    /**
-     * Enregistre un nouvel utilisateur dans la base de données
-     * @param username Le nom d'utilisateur
-     * @param email L'adresse email
-     * @param password Le mot de passe (doit être hashé avant l'appel)
-     * @return true si l'enregistrement est réussi, false sinon
-     */
-    public static boolean registerUser(String username, String email, String password) {
-        String sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+    // ─────────────────────────────────────────
+    // AUTHENTIFICATION
+    // ─────────────────────────────────────────
 
+    public static boolean registerUser(String username, String email, String password) {
+        if (emailExists(email) || usernameExists(username)) return false;
+
+        String sql = "INSERT INTO users (username, email, password, full_name) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
             stmt.setString(2, email);
-            stmt.setString(3, password); // Le mot de passe devrait être hashé
-
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+            stmt.setString(3, hashPassword(password));
+            stmt.setString(4, username);
+            stmt.executeUpdate();
+            System.out.println("✅ Utilisateur enregistré : " + username);
+            return true;
 
         } catch (SQLException e) {
-            System.err.println("Erreur lors de l'enregistrement de l'utilisateur: " + e.getMessage());
+            System.err.println("❌ Erreur inscription : " + e.getMessage());
             return false;
         }
     }
 
-    /**
-     * Vérifie les informations de connexion d'un utilisateur
-     * @param email L'adresse email
-     * @param password Le mot de passe
-     * @return User object si la connexion est réussie, null sinon
-     */
-    public static User loginUser(String email, String password) {
-        String sql = "SELECT id, username, email FROM users WHERE email = ? AND password = ?";
-
+    public static boolean loginUser(String email, String password) {
+        String sql = "SELECT password FROM users WHERE email = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, email);
-            stmt.setString(2, password);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    int id = rs.getInt("id");
-                    String username = rs.getString("username");
-                    String userEmail = rs.getString("email");
-
-                    return new User(id, username, userEmail);
-                }
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                String storedHash = rs.getString("password");
+                return storedHash.equals(hashPassword(password));
             }
 
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la connexion de l'utilisateur: " + e.getMessage());
+            System.err.println("❌ Erreur connexion : " + e.getMessage());
         }
-
-        return null; // Connexion échouée
+        return false;
     }
 
-    /**
-     * Vérifie si un email existe déjà dans la base de données
-     * @param email L'adresse email à vérifier
-     * @return true si l'email existe, false sinon
-     */
+    public static String getUsernameByEmail(String email) {
+        String sql = "SELECT username FROM users WHERE email = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getString("username");
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur getUsernameByEmail : " + e.getMessage());
+        }
+        return "Utilisateur";
+    }
+
+    public static int getUserIdByEmail(String email) {
+        String sql = "SELECT id FROM users WHERE email = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt("id");
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur getUserId : " + e.getMessage());
+        }
+        return -1;
+    }
+
+    // ─────────────────────────────────────────
+    // VÉRIFICATIONS
+    // ─────────────────────────────────────────
+
     public static boolean emailExists(String email) {
-        String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, email);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la vérification de l'email: " + e.getMessage());
-        }
-
-        return false;
+        return checkExists("SELECT COUNT(*) FROM users WHERE email = ?", email);
     }
 
-    /**
-     * Vérifie si un nom d'utilisateur existe déjà dans la base de données
-     * @param username Le nom d'utilisateur à vérifier
-     * @return true si le nom d'utilisateur existe, false sinon
-     */
     public static boolean usernameExists(String username) {
-        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
+        return checkExists("SELECT COUNT(*) FROM users WHERE username = ?", username);
+    }
 
+    private static boolean checkExists(String sql, String value) {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, username);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
+            stmt.setString(1, value);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
 
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la vérification du nom d'utilisateur: " + e.getMessage());
+            System.err.println("❌ Erreur checkExists : " + e.getMessage());
         }
-
         return false;
     }
 
-    /**
-     * Classe interne pour représenter un utilisateur
-     */
-    public static class User {
-        private final int id;
-        private final String username;
-        private final String email;
+    // ─────────────────────────────────────────
+    // SÉCURITÉ - HASH SHA-256
+    // ─────────────────────────────────────────
 
-        public User(int id, String username, String email) {
-            this.id = id;
-            this.username = username;
-            this.email = email;
+    public static String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 introuvable", e);
         }
+    }
 
-        public int getId() {
-            return id;
-        }
+    // ─────────────────────────────────────────
+    // MISE À JOUR PROFIL
+    // ─────────────────────────────────────────
 
-        public String getUsername() {
-            return username;
-        }
+    public static boolean updateProfile(int userId, String fullName, String email) {
+        String sql = "UPDATE users SET full_name = ?, email = ?, updated_at = NOW() WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        public String getEmail() {
-            return email;
-        }
+            stmt.setString(1, fullName);
+            stmt.setString(2, email);
+            stmt.setInt(3, userId);
+            return stmt.executeUpdate() > 0;
 
-        @Override
-        public String toString() {
-            return "User{" +
-                    "id=" + id +
-                    ", username='" + username + '\'' +
-                    ", email='" + email + '\'' +
-                    '}';
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur updateProfile : " + e.getMessage());
+            return false;
         }
     }
 }

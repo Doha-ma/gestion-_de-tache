@@ -1,335 +1,166 @@
 package com.virtualcampushub;
 
 import javafx.animation.*;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class ViewManager {
-    private final BorderPane root;
-    private final Sidebar sidebar;
-    private final TopBar topBar;
 
-    private final DashboardView dashboardView;
-    private final CoursesView coursesView;
-    private final EventsView eventsView;
-    private final LoginView loginView;
-    private final RegisterView registerView;
-    private final ProfileView profileView;
-    private ChatView chatView;
-
+    private final Stage stage;
+    private BorderPane mainLayout;
+    private Sidebar sidebar;
+    private TopBar topBar;
     private String currentUsername = "Utilisateur";
-    private Node currentView;
+    private int currentUserId = -1;
 
-    public ViewManager() {
-        root = new BorderPane();
+    public ViewManager(Stage stage) {
+        this.stage = stage;
+        stage.setTitle("Virtual Campus Hub");
+        stage.setMinWidth(1100);
+        stage.setMinHeight(700);
 
-        dashboardView = new DashboardView();
-        coursesView = new CoursesView();
-        eventsView = new EventsView();
-        loginView = new LoginView(this);
-        registerView = new RegisterView(this);
-        profileView = new ProfileView();
-
-        topBar = new TopBar(this);
-        sidebar = new Sidebar(this);
-
-        root.setLeft(sidebar.getContent());
-        root.setTop(topBar.getContent());
-        root.getStyleClass().add("root");
+        // Centrer la fenêtre
+        Rectangle2D screen = Screen.getPrimary().getVisualBounds();
+        stage.setWidth(Math.min(1400, screen.getWidth() * 0.9));
+        stage.setHeight(Math.min(850, screen.getHeight() * 0.9));
+        stage.centerOnScreen();
     }
 
-    public BorderPane getRoot() {
-        return root;
-    }
-
-    public void showDashboard() {
-        switchTo(dashboardView.getContent());
-        sidebar.setActive(Sidebar.Section.DASHBOARD);
-    }
-
-    public void showChat() {
-        showChat(currentUsername);
-    }
-
-    public void showChat(String username) {
-        currentUsername = username == null || username.isBlank() ? "Utilisateur" : username;
-        if (chatView != null) {
-            chatView.shutdown();
-        }
-        chatView = new ChatView(currentUsername);
-        switchToWithAnimation(chatView.getContent(), Sidebar.Section.CHAT, "slide-in-right");
-    }
-
-    /**
-     * Version professionnelle avec animation sophistiquée pour PFE
-     */
-    public void showDashboardWithProfessionalAnimation() {
-        switchToWithProfessionalAnimation(dashboardView.getContent(),
-                                        Sidebar.Section.DASHBOARD,
-                                        "professional-entrance");
-    }
-
-    public void showCourses() {
-        switchToWithAnimation(coursesView.getContent(), Sidebar.Section.COURSES, "slide-in-right");
-    }
-
-    public void showEvents() {
-        switchToWithAnimation(eventsView.getContent(), Sidebar.Section.EVENTS, "slide-in-left");
-    }
+    // ─────────────────────────────────────────
+    // VUES PUBLIQUES (sans layout principal)
+    // ─────────────────────────────────────────
 
     public void showLogin() {
-        if (chatView != null) {
-            chatView.shutdown();
-            chatView = null;
-        }
-        switchToWithAnimation(loginView.getContent(), Sidebar.Section.LOGIN, "fade-in");
+        LoginView loginView = new LoginView(this);
+        Scene scene = new Scene(loginView.getView());
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        stage.setScene(scene);
+        stage.show();
+        fadeIn(loginView.getView());
     }
 
     public void showRegister() {
-        switchToWithAnimation(registerView.getContent(), Sidebar.Section.LOGIN, "fade-in");
+        RegisterView registerView = new RegisterView(this);
+        Scene scene = new Scene(registerView.getView());
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        stage.setScene(scene);
+        fadeIn(registerView.getView());
+    }
+
+    // ─────────────────────────────────────────
+    // INITIALISATION LAYOUT PRINCIPAL
+    // ─────────────────────────────────────────
+
+    public void initMainLayout() {
+        if (mainLayout == null) {
+            mainLayout = new BorderPane();
+            sidebar = new Sidebar(this);
+            topBar = new TopBar(this);
+            mainLayout.setLeft(sidebar.getView());
+            mainLayout.setTop(topBar.getView());
+        }
+    }
+
+    // ─────────────────────────────────────────
+    // NAVIGATION INTERNE
+    // ─────────────────────────────────────────
+
+    public void showDashboard() {
+        initMainLayout();
+        sidebar.setActive("dashboard");
+        topBar.setTitle("Tableau de bord");
+        DashboardView view = new DashboardView(this);
+        switchCenter(view.getView());
+        ensureMainScene();
+    }
+
+    public void showCourses() {
+        initMainLayout();
+        sidebar.setActive("courses");
+        topBar.setTitle("Mes Cours");
+        CoursesView view = new CoursesView(this);
+        switchCenter(view.getView());
+        ensureMainScene();
+    }
+
+    public void showEvents() {
+        initMainLayout();
+        sidebar.setActive("events");
+        topBar.setTitle("Événements");
+        EventsView view = new EventsView(this);
+        switchCenter(view.getView());
+        ensureMainScene();
     }
 
     public void showProfile() {
-        switchToWithAnimation(profileView.getContent(), Sidebar.Section.PROFILE, "slide-in-right");
+        initMainLayout();
+        sidebar.setActive("profile");
+        topBar.setTitle("Mon Profil");
+        ProfileView view = new ProfileView(this);
+        switchCenter(view.getView());
+        ensureMainScene();
     }
 
-    /**
-     * Transition améliorée avec différents types d'animations
-     */
-    private void switchToWithAnimation(Node newView, Sidebar.Section section, String animationType) {
-        Node old = root.getCenter();
-        if (old != null) {
-            // Animation de sortie sophistiquée
-            ParallelTransition exitTransition = createExitTransition(old);
-            exitTransition.setOnFinished(evt -> {
-                root.setCenter(newView);
-                animateEntrance(newView, animationType);
-            });
-            exitTransition.play();
-        } else {
-            root.setCenter(newView);
-            animateEntrance(newView, animationType);
-        }
-
-        sidebar.setActive(section);
+    public void showChat() {
+        initMainLayout();
+        sidebar.setActive("chat");
+        topBar.setTitle("Messagerie");
+        ChatView view = new ChatView(this);
+        switchCenter(view.getView());
+        ensureMainScene();
     }
 
-    /**
-     * Crée une animation de sortie élégante
-     */
-    private ParallelTransition createExitTransition(Node node) {
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(200), node);
-        fadeOut.setFromValue(1.0);
-        fadeOut.setToValue(0.0);
+    // ─────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────
 
-        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(200), node);
-        scaleOut.setFromX(1.0);
-        scaleOut.setFromY(1.0);
-        scaleOut.setToX(0.95);
-        scaleOut.setToY(0.95);
-
-        TranslateTransition slideOut = new TranslateTransition(Duration.millis(200), node);
-        slideOut.setFromX(0);
-        slideOut.setToX(-20);
-
-        ParallelTransition exitTransition = new ParallelTransition(fadeOut, scaleOut, slideOut);
-        return exitTransition;
-    }
-
-    /**
-     * Anime l'entrée d'une nouvelle vue avec différents effets
-     */
-    private void animateEntrance(Node node, String animationType) {
-        // Reset des propriétés
-        node.setOpacity(0);
-        node.setScaleX(1);
-        node.setScaleY(1);
-        node.setTranslateX(0);
-        node.setTranslateY(0);
-
-        switch (animationType) {
-            case "bounce-in":
-                animateBounceIn(node);
-                break;
-            case "slide-in-left":
-                animateSlideInLeft(node);
-                break;
-            case "slide-in-right":
-                animateSlideInRight(node);
-                break;
-            case "fade-in":
-            default:
-                animateFadeIn(node);
-                break;
+    private void ensureMainScene() {
+        if (stage.getScene() == null || stage.getScene().getRoot() != mainLayout) {
+            Scene scene = new Scene(mainLayout);
+            scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+            stage.setScene(scene);
         }
     }
 
-    private void animateBounceIn(Node node) {
-        // Animation de rebond sophistiquée
-        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(600), node);
-        scaleIn.setFromX(0.3);
-        scaleIn.setFromY(0.3);
-        scaleIn.setToX(1.0);
-        scaleIn.setToY(1.0);
-        scaleIn.setInterpolator(Interpolator.SPLINE(0.68, -0.55, 0.265, 1.55));
-
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(400), node);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-
-        ParallelTransition bounceIn = new ParallelTransition(scaleIn, fadeIn);
-        bounceIn.play();
-    }
-
-    private void animateSlideInLeft(Node node) {
-        node.setTranslateX(-50);
-        node.setOpacity(0);
-
-        TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), node);
-        slideIn.setFromX(-50);
-        slideIn.setToX(0);
-        slideIn.setInterpolator(Interpolator.EASE_OUT);
-
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), node);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-
-        ParallelTransition slideInLeft = new ParallelTransition(slideIn, fadeIn);
-        slideInLeft.play();
-    }
-
-    private void animateSlideInRight(Node node) {
-        node.setTranslateX(50);
-        node.setOpacity(0);
-
-        TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), node);
-        slideIn.setFromX(50);
-        slideIn.setToX(0);
-        slideIn.setInterpolator(Interpolator.EASE_OUT);
-
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), node);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-
-        ParallelTransition slideInRight = new ParallelTransition(slideIn, fadeIn);
-        slideInRight.play();
-    }
-
-    private void animateFadeIn(Node node) {
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), node);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-        fadeIn.setInterpolator(Interpolator.EASE_IN);
-        fadeIn.play();
-    }
-
-    // Méthodes de compatibilité
-    private void switchTo(Node newView) {
-        switchToWithAnimation(newView, Sidebar.Section.DASHBOARD, "fade-in");
-    }
-
-    private void animateIn(Node node) {
-        animateFadeIn(node);
-    }
-
-    /**
-     * Méthode professionnelle avec animation sophistiquée pour PFE
-     */
-    private void switchToWithProfessionalAnimation(Node newContent, Sidebar.Section section, String animationClass) {
-        if (currentView == newContent) return;
-
-        // Animation de sortie professionnelle
-        if (currentView != null) {
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(300), currentView);
+    private void switchCenter(Node newContent) {
+        if (mainLayout.getCenter() != null) {
+            Node old = (Node) mainLayout.getCenter();
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(150), old);
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0.0);
-            fadeOut.setInterpolator(Interpolator.EASE_OUT);
-
-            ScaleTransition scaleOut = new ScaleTransition(Duration.millis(300), currentView);
-            scaleOut.setFromX(1.0);
-            scaleOut.setFromY(1.0);
-            scaleOut.setToX(0.95);
-            scaleOut.setToY(0.95);
-            scaleOut.setInterpolator(Interpolator.EASE_OUT);
-
-            ParallelTransition exitAnimation = new ParallelTransition(fadeOut, scaleOut);
-            exitAnimation.setOnFinished(e -> {
-                root.setCenter(newContent);
-                startProfessionalEntranceAnimation(newContent, section);
+            fadeOut.setOnFinished(e -> {
+                mainLayout.setCenter(newContent);
+                fadeIn(newContent);
             });
-            exitAnimation.play();
+            fadeOut.play();
         } else {
-            root.setCenter(newContent);
-            startProfessionalEntranceAnimation(newContent, section);
+            mainLayout.setCenter(newContent);
+            fadeIn(newContent);
         }
-
-        currentView = newContent;
     }
 
-    /**
-     * Animation d'entrée professionnelle sophistiquée
-     */
-    private void startProfessionalEntranceAnimation(Node content, Sidebar.Section section) {
-        // Animation d'échelle progressive
-        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(500), content);
-        scaleIn.setFromX(0.8);
-        scaleIn.setFromY(0.8);
-        scaleIn.setToX(1.0);
-        scaleIn.setToY(1.0);
-        scaleIn.setInterpolator(Interpolator.EASE_OUT);
-
-        // Animation de fondu
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), content);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-        fadeIn.setInterpolator(Interpolator.EASE_OUT);
-
-        // Animation de translation subtile
-        TranslateTransition slideIn = new TranslateTransition(Duration.millis(500), content);
-        slideIn.setFromX(50);
-        slideIn.setFromY(0);
-        slideIn.setToX(0);
-        slideIn.setToY(0);
-        slideIn.setInterpolator(Interpolator.EASE_OUT);
-
-        ParallelTransition entranceAnimation = new ParallelTransition(scaleIn, fadeIn, slideIn);
-        entranceAnimation.setOnFinished(e -> {
-            sidebar.setActive(section);
-            // Animation de pulsation subtile pour indiquer l'activation
-            ScaleTransition pulse = new ScaleTransition(Duration.millis(200), content);
-            pulse.setFromX(1.0);
-            pulse.setFromY(1.0);
-            pulse.setToX(1.02);
-            pulse.setToY(1.02);
-            pulse.setAutoReverse(true);
-            pulse.setCycleCount(2);
-            pulse.setInterpolator(Interpolator.EASE_BOTH);
-            pulse.play();
-        });
-        entranceAnimation.play();
+    private void fadeIn(Node node) {
+        FadeTransition ft = new FadeTransition(Duration.millis(300), node);
+        ft.setFromValue(0.0);
+        ft.setToValue(1.0);
+        ft.play();
     }
 
-    public void showToast(String message) {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Notification");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
+    // ─────────────────────────────────────────
+    // GETTERS / SETTERS
+    // ─────────────────────────────────────────
 
-        // Style moderne pour l'alerte
-        alert.getDialogPane().getStyleClass().add("modern-alert");
-        alert.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+    public String getCurrentUsername() { return currentUsername; }
+    public void setCurrentUsername(String username) { this.currentUsername = username; }
 
-        alert.show();
+    public int getCurrentUserId() { return currentUserId; }
+    public void setCurrentUserId(int id) { this.currentUserId = id; }
 
-        // Animation d'auto-fermeture améliorée
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(500), alert.getDialogPane());
-        fadeOut.setDelay(Duration.seconds(2));
-        fadeOut.setFromValue(1.0);
-        fadeOut.setToValue(0.0);
-        fadeOut.setOnFinished(e -> alert.close());
-        fadeOut.play();
-    }
+    public Stage getStage() { return stage; }
 }

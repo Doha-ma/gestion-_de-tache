@@ -1,368 +1,239 @@
 package com.virtualcampushub;
 
-import javafx.animation.FadeTransition;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.animation.*;
+import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.paint.*;
+import javafx.scene.shape.*;
+import javafx.scene.text.*;
 import javafx.util.Duration;
 
-import java.io.*;
-import java.net.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 public class LoginView {
-    private final BorderPane content;
-    private final TextField emailField;
-    private final PasswordField passwordField;
-    private final Button loginButton;
-    private final Button registerButton;
-    private final Label statusLabel;
-    private final Label networkStatusLabel;
-    private final ExecutorService executor;
-    private ServerSocket serverSocket;
-    private Socket clientSocket;
-    private boolean isLoggedIn = false;
-    private String currentUsername = "";
+
     private final ViewManager viewManager;
+    private StackPane root;
+    private TextField emailField;
+    private PasswordField passwordField;
+    private Label messageLabel;
 
     public LoginView(ViewManager viewManager) {
         this.viewManager = viewManager;
-        content = new BorderPane();
-        content.getStyleClass().add("login-view");
-        executor = Executors.newCachedThreadPool();
-
-        // Header
-        VBox headerBox = new VBox(10);
-        headerBox.setAlignment(Pos.CENTER);
-        headerBox.setPadding(new Insets(40, 20, 20, 20));
-
-        Label titleLabel = new Label("Virtual Campus Hub");
-        titleLabel.getStyleClass().add("login-title");
-        titleLabel.setFont(Font.font("Inter", FontWeight.BOLD, 32));
-
-        Label subtitleLabel = new Label("Connexion à votre espace étudiant");
-        subtitleLabel.getStyleClass().add("login-subtitle");
-        subtitleLabel.setFont(Font.font("Inter", FontWeight.NORMAL, 16));
-
-        headerBox.getChildren().addAll(titleLabel, subtitleLabel);
-
-        // Login Form
-        VBox formBox = new VBox(20);
-        formBox.setAlignment(Pos.CENTER);
-        formBox.setPadding(new Insets(40, 60, 40, 60));
-        formBox.setMaxWidth(400);
-        formBox.getStyleClass().add("login-form");
-
-        // Email field
-        VBox emailBox = new VBox(8);
-        emailBox.setAlignment(Pos.CENTER_LEFT);
-
-        Label emailLabel = new Label("Adresse email");
-        emailLabel.getStyleClass().add("login-label");
-        emailLabel.setFont(Font.font("Inter", FontWeight.MEDIUM, 14));
-
-        emailField = new TextField();
-        emailField.setPromptText("votre.email@exemple.com");
-        emailField.getStyleClass().add("login-input");
-        emailField.setPrefWidth(300);
-
-        emailBox.getChildren().addAll(emailLabel, emailField);
-
-        // Password field
-        VBox passwordBox = new VBox(8);
-        passwordBox.setAlignment(Pos.CENTER_LEFT);
-
-        Label passwordLabel = new Label("Mot de passe");
-        passwordLabel.getStyleClass().add("login-label");
-        passwordLabel.setFont(Font.font("Inter", FontWeight.MEDIUM, 14));
-
-        passwordField = new PasswordField();
-        passwordField.setPromptText("Entrez votre mot de passe");
-        passwordField.getStyleClass().add("login-input");
-        passwordField.setPrefWidth(300);
-
-        passwordBox.getChildren().addAll(passwordLabel, passwordField);
-
-        // Login button
-        loginButton = new Button("Se connecter");
-        loginButton.getStyleClass().add("login-button");
-        loginButton.setPrefWidth(300);
-        loginButton.setPrefHeight(45);
-
-        // Register button
-        registerButton = new Button("Créer un compte");
-        registerButton.getStyleClass().add("register-link-button");
-        registerButton.setPrefWidth(300);
-        registerButton.setPrefHeight(35);
-
-        // Status labels
-        statusLabel = new Label("");
-        statusLabel.getStyleClass().add("login-status");
-        statusLabel.setFont(Font.font("Inter", FontWeight.NORMAL, 12));
-
-        networkStatusLabel = new Label("Vérification du réseau...");
-        networkStatusLabel.getStyleClass().add("network-status");
-        networkStatusLabel.setFont(Font.font("Inter", FontWeight.NORMAL, 12));
-
-        formBox.getChildren().addAll(emailBox, passwordBox, loginButton, registerButton, statusLabel, networkStatusLabel);
-
-        // Center container
-        VBox centerContainer = new VBox();
-        centerContainer.setAlignment(Pos.CENTER);
-        centerContainer.getChildren().add(formBox);
-
-        content.setTop(headerBox);
-        content.setCenter(centerContainer);
-
-        // Event handlers
-        setupEventHandlers();
-
-        // Start network detection
-        startNetworkDetection();
+        buildUI();
     }
 
-    private void setupEventHandlers() {
-        loginButton.setOnAction(e -> attemptLogin());
-        registerButton.setOnAction(e -> viewManager.showRegister());
+    private void buildUI() {
+        root = new StackPane();
+        root.getStyleClass().add("auth-root");
 
-        // Enter key support
-        passwordField.setOnAction(e -> attemptLogin());
+        // Fond avec gradient
+        root.setStyle("-fx-background-color: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);");
 
-        // Real-time validation
-        emailField.textProperty().addListener((obs, oldText, newText) -> {
-            updateLoginButtonState();
+        // Cercles décoratifs en fond
+        Circle c1 = new Circle(250);
+        c1.setFill(Color.web("#6C63FF", 0.08));
+        c1.setTranslateX(-400);
+        c1.setTranslateY(-200);
+
+        Circle c2 = new Circle(180);
+        c2.setFill(Color.web("#FF6584", 0.06));
+        c2.setTranslateX(400);
+        c2.setTranslateY(250);
+
+        Circle c3 = new Circle(120);
+        c3.setFill(Color.web("#43E97B", 0.05));
+        c3.setTranslateX(200);
+        c3.setTranslateY(-300);
+
+        // Carte centrale
+        VBox card = new VBox(20);
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new Insets(50, 60, 50, 60));
+        card.setMaxWidth(460);
+        card.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.05);
+            -fx-background-radius: 24;
+            -fx-border-color: rgba(255,255,255,0.12);
+            -fx-border-radius: 24;
+            -fx-border-width: 1;
+            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 40, 0, 0, 20);
+            """);
+
+        // Logo / Icône
+        Label logo = new Label("🎓");
+        logo.setStyle("-fx-font-size: 48;");
+
+        // Titre
+        Label title = new Label("Virtual Campus Hub");
+        title.setStyle("""
+            -fx-font-size: 26;
+            -fx-font-weight: bold;
+            -fx-text-fill: white;
+            -fx-font-family: 'Segoe UI';
+            """);
+
+        Label subtitle = new Label("Connectez-vous à votre espace académique");
+        subtitle.setStyle("-fx-font-size: 13; -fx-text-fill: rgba(255,255,255,0.6); -fx-font-family: 'Segoe UI';");
+        subtitle.setWrapText(true);
+        subtitle.setTextAlignment(TextAlignment.CENTER);
+
+        // Séparateur
+        Separator sep = new Separator();
+        sep.setStyle("-fx-background-color: rgba(255,255,255,0.1);");
+
+        // Champs
+        emailField = createTextField("✉  Adresse email", false);
+        passwordField = (PasswordField) createTextField("🔒  Mot de passe", true);
+
+        // Message erreur/succès
+        messageLabel = new Label();
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(340);
+        messageLabel.setAlignment(Pos.CENTER);
+        messageLabel.setStyle("-fx-font-size: 12; -fx-text-fill: #FF6B6B; -fx-font-family: 'Segoe UI';");
+
+        // Bouton connexion
+        Button loginBtn = new Button("Se connecter");
+        loginBtn.setPrefWidth(340);
+        loginBtn.setPrefHeight(46);
+        loginBtn.getStyleClass().add("btn-primary");
+        loginBtn.setStyle("""
+            -fx-background-color: linear-gradient(to right, #6C63FF, #3b5bdb);
+            -fx-text-fill: white;
+            -fx-font-size: 14;
+            -fx-font-weight: bold;
+            -fx-background-radius: 12;
+            -fx-cursor: hand;
+            -fx-effect: dropshadow(gaussian, rgba(108,99,255,0.5), 15, 0, 0, 4);
+            """);
+        loginBtn.setOnMouseEntered(e -> loginBtn.setStyle("""
+            -fx-background-color: linear-gradient(to right, #7c74ff, #4c6aed);
+            -fx-text-fill: white;
+            -fx-font-size: 14;
+            -fx-font-weight: bold;
+            -fx-background-radius: 12;
+            -fx-cursor: hand;
+            -fx-effect: dropshadow(gaussian, rgba(108,99,255,0.7), 20, 0, 0, 6);
+            """));
+        loginBtn.setOnMouseExited(e -> loginBtn.setStyle("""
+            -fx-background-color: linear-gradient(to right, #6C63FF, #3b5bdb);
+            -fx-text-fill: white;
+            -fx-font-size: 14;
+            -fx-font-weight: bold;
+            -fx-background-radius: 12;
+            -fx-cursor: hand;
+            -fx-effect: dropshadow(gaussian, rgba(108,99,255,0.5), 15, 0, 0, 4);
+            """));
+        loginBtn.setOnAction(e -> handleLogin());
+
+        // Lien inscription
+        HBox registerBox = new HBox(6);
+        registerBox.setAlignment(Pos.CENTER);
+        Label noAccount = new Label("Pas encore de compte ?");
+        noAccount.setStyle("-fx-text-fill: rgba(255,255,255,0.6); -fx-font-size: 12;");
+        Hyperlink registerLink = new Hyperlink("S'inscrire");
+        registerLink.setStyle("-fx-text-fill: #6C63FF; -fx-font-size: 12; -fx-border-color: transparent;");
+        registerLink.setOnAction(e -> viewManager.showRegister());
+        registerBox.getChildren().addAll(noAccount, registerLink);
+
+        // Entrée avec Enter
+        passwordField.setOnAction(e -> handleLogin());
+
+        card.getChildren().addAll(logo, title, subtitle, sep, emailField, passwordField,
+                messageLabel, loginBtn, registerBox);
+
+        root.getChildren().addAll(c1, c2, c3, card);
+
+        // Animation d'entrée
+        card.setTranslateY(30);
+        card.setOpacity(0);
+        TranslateTransition tt = new TranslateTransition(Duration.millis(500), card);
+        tt.setToY(0);
+        tt.setInterpolator(Interpolator.EASE_OUT);
+        FadeTransition ft = new FadeTransition(Duration.millis(500), card);
+        ft.setToValue(1);
+        ParallelTransition pt = new ParallelTransition(tt, ft);
+        pt.setDelay(Duration.millis(100));
+        pt.play();
+    }
+
+    private TextField createTextField(String prompt, boolean isPassword) {
+        TextField field = isPassword ? new PasswordField() : new TextField();
+        field.setPromptText(prompt);
+        field.setPrefHeight(46);
+        field.setPrefWidth(340);
+        field.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.08);
+            -fx-text-fill: white;
+            -fx-prompt-text-fill: rgba(255,255,255,0.4);
+            -fx-background-radius: 12;
+            -fx-border-color: rgba(255,255,255,0.15);
+            -fx-border-radius: 12;
+            -fx-border-width: 1;
+            -fx-padding: 0 16 0 16;
+            -fx-font-size: 13;
+            -fx-font-family: 'Segoe UI';
+            """);
+        field.focusedProperty().addListener((obs, old, focused) -> {
+            if (focused) {
+                field.setStyle(field.getStyle().replace("rgba(255,255,255,0.15)", "#6C63FF"));
+            } else {
+                field.setStyle(field.getStyle().replace("#6C63FF", "rgba(255,255,255,0.15)"));
+            }
         });
-
-        passwordField.textProperty().addListener((obs, oldText, newText) -> {
-            updateLoginButtonState();
-        });
+        return field;
     }
 
-    private void updateLoginButtonState() {
-        boolean hasEmail = !emailField.getText().trim().isEmpty() && isValidEmail(emailField.getText().trim());
-        boolean hasPassword = !passwordField.getText().isEmpty();
-        loginButton.setDisable(!(hasEmail && hasPassword));
-    }
-
-    private boolean isValidEmail(String email) {
-        return email.contains("@") && email.contains(".") && email.length() >= 5;
-    }
-
-    private void attemptLogin() {
+    private void handleLogin() {
         String email = emailField.getText().trim();
         String password = passwordField.getText();
 
         if (email.isEmpty() || password.isEmpty()) {
-            showStatus("Veuillez remplir tous les champs", Color.ORANGE);
+            showMessage("Veuillez remplir tous les champs.", false);
             return;
         }
 
-        if (!isValidEmail(email)) {
-            showStatus("Veuillez entrer une adresse email valide", Color.ORANGE);
-            return;
+        // Tentative connexion DB
+        boolean loggedIn = false;
+        boolean dbAvailable = DatabaseConnection.isConnected();
+
+        if (dbAvailable) {
+            loggedIn = UserDAO.loginUser(email, password);
+        } else {
+            // Mode démo : accepter admin@campus.fr / admin123
+            loggedIn = email.equals("admin@campus.fr") && password.equals("admin123");
         }
 
-        // Désactiver le bouton pendant le traitement
-        loginButton.setDisable(true);
-        loginButton.setText("Connexion en cours...");
-        showStatus("Connexion en cours...", Color.BLUE);
+        if (loggedIn) {
+            String username = dbAvailable ? UserDAO.getUsernameByEmail(email) : "Admin";
+            int userId = dbAvailable ? UserDAO.getUserIdByEmail(email) : 1;
+            viewManager.setCurrentUsername(username);
+            viewManager.setCurrentUserId(userId);
+            showMessage("✅ Connexion réussie ! Bienvenue " + username, true);
 
-        // Traitement en arrière-plan
-        executor.submit(() -> {
-            try {
-                // Vérifier la connexion à la base de données
-                if (!DatabaseConnection.testConnection()) {
-                    javafx.application.Platform.runLater(() -> {
-                        showStatus("Erreur de connexion à la base de données", Color.RED);
-                        loginButton.setDisable(false);
-                        loginButton.setText("Se connecter");
-                    });
-                    return;
-                }
-
-                // Simuler un délai de traitement
-                Thread.sleep(1000);
-
-                // Tenter la connexion
-                UserDAO.User user = UserDAO.loginUser(email, password);
-
-                javafx.application.Platform.runLater(() -> {
-                    if (user != null) {
-                        currentUsername = user.getUsername();
-                        showStatus("Connexion réussie ! Bienvenue " + currentUsername, Color.GREEN);
-                        loginButton.setText("Connecté ✓");
-
-                        // Animation de succès
-                        animateSuccess();
-
-                        // Rediriger vers la messagerie après connexion réussie
-                        new Thread(() -> {
-                            try {
-                                Thread.sleep(1200);
-                                javafx.application.Platform.runLater(() -> viewManager.showChat(currentUsername));
-                            } catch (InterruptedException ex) {
-                                // Ignorer
-                            }
-                        }).start();
-
-                    } else {
-                        showStatus("Email ou mot de passe incorrect", Color.RED);
-                        loginButton.setDisable(false);
-                        loginButton.setText("Se connecter");
-                    }
-                });
-
-            } catch (InterruptedException e) {
-                javafx.application.Platform.runLater(() -> {
-                    showStatus("Opération interrompue", Color.ORANGE);
-                    loginButton.setDisable(false);
-                    loginButton.setText("Se connecter");
-                });
-            }
-        });
-    }
-
-    private void showStatus(String message, Color color) {
-        statusLabel.setText(message);
-        statusLabel.setTextFill(color);
-
-        // Animate status change
-        FadeTransition ft = new FadeTransition(Duration.millis(300), statusLabel);
-        ft.setFromValue(0.0);
-        ft.setToValue(1.0);
-        ft.play();
-    }
-
-    private void animateSuccess() {
-        // Success animation
-        FadeTransition ft = new FadeTransition(Duration.millis(500), content);
-        ft.setFromValue(1.0);
-        ft.setToValue(0.9);
-        ft.setAutoReverse(true);
-        ft.setCycleCount(2);
-        ft.play();
-    }
-
-    private void startNetworkDetection() {
-        executor.submit(() -> {
-            try {
-                // Get local IP address
-                InetAddress localHost = InetAddress.getLocalHost();
-                String localIP = localHost.getHostAddress();
-
-                // Check if we're on a local network (192.168.x.x or 10.x.x.x)
-                boolean isLocalNetwork = localIP.startsWith("192.168.") || localIP.startsWith("10.");
-
-                javafx.application.Platform.runLater(() -> {
-                    if (isLocalNetwork) {
-                        networkStatusLabel.setText("✓ Connecté au réseau local (" + localIP + ")");
-                        networkStatusLabel.setTextFill(Color.GREEN);
-                    } else {
-                        networkStatusLabel.setText("⚠ Réseau détecté: " + localIP);
-                        networkStatusLabel.setTextFill(Color.ORANGE);
-                    }
-                });
-
-            } catch (UnknownHostException e) {
-                javafx.application.Platform.runLater(() -> {
-                    networkStatusLabel.setText("✗ Impossible de détecter le réseau");
-                    networkStatusLabel.setTextFill(Color.RED);
-                });
-            }
-        });
-    }
-
-    private void startNetworkCommunication() {
-        executor.submit(() -> {
-            try {
-                // Start server socket for receiving connections
-                serverSocket = new ServerSocket(8888);
-                System.out.println("Serveur de chat démarré sur le port 8888");
-
-                while (isLoggedIn) {
-                    try {
-                        clientSocket = serverSocket.accept();
-                        System.out.println("Nouvelle connexion acceptée: " + clientSocket.getInetAddress());
-
-                        // Handle the connection in a separate thread
-                        handleClientConnection(clientSocket);
-                    } catch (IOException e) {
-                        if (isLoggedIn) {
-                            System.out.println("Erreur lors de l'acceptation d'une connexion: " + e.getMessage());
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                System.out.println("Erreur lors du démarrage du serveur: " + e.getMessage());
-            }
-        });
-    }
-
-    private void handleClientConnection(Socket socket) {
-        executor.submit(() -> {
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-
-                // Send welcome message
-                out.println("Bienvenue sur Virtual Campus Hub! Connecté en tant que: " + currentUsername);
-
-                String message;
-                while ((message = in.readLine()) != null) {
-                    System.out.println("Message reçu: " + message);
-
-                    // Echo back the message (in real app, broadcast to all connected clients)
-                    out.println("Echo: " + message);
-                }
-
-            } catch (IOException e) {
-                System.out.println("Erreur de communication avec le client: " + e.getMessage());
-            }
-        });
-    }
-
-    public BorderPane getContent() {
-        return content;
-    }
-
-    public boolean isLoggedIn() {
-        return isLoggedIn;
-    }
-
-    public String getCurrentUsername() {
-        return currentUsername;
-    }
-
-    public void logout() {
-        isLoggedIn = false;
-        currentUsername = "";
-
-        // Close sockets
-        try {
-            if (clientSocket != null && !clientSocket.isClosed()) {
-                clientSocket.close();
-            }
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            System.out.println("Erreur lors de la fermeture des sockets: " + e.getMessage());
+            // Transition après 800ms
+            PauseTransition pause = new PauseTransition(Duration.millis(800));
+            pause.setOnFinished(e -> viewManager.showDashboard());
+            pause.play();
+        } else {
+            showMessage("❌ Email ou mot de passe incorrect.", false);
+            shakeCard();
         }
-
-        // Reset UI
-        emailField.clear();
-        passwordField.clear();
-        loginButton.setDisable(true);
-        loginButton.setText("Se connecter");
-        showStatus("", Color.BLACK);
     }
 
-    public void shutdown() {
-        logout();
-        executor.shutdown();
+    private void showMessage(String msg, boolean success) {
+        messageLabel.setText(msg);
+        messageLabel.setStyle("-fx-font-size: 12; -fx-font-family: 'Segoe UI'; -fx-text-fill: "
+                + (success ? "#43E97B" : "#FF6B6B") + ";");
     }
+
+    private void shakeCard() {
+        TranslateTransition shake = new TranslateTransition(Duration.millis(60), root);
+        shake.setCycleCount(6);
+        shake.setAutoReverse(true);
+        shake.setByX(10);
+        shake.play();
+    }
+
+    public StackPane getView() { return root; }
 }

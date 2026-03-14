@@ -1,314 +1,199 @@
 package com.virtualcampushub;
 
-import javafx.animation.FadeTransition;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.animation.*;
+import javafx.geometry.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.paint.*;
+import javafx.scene.shape.*;
 import javafx.util.Duration;
 
 public class RegisterView {
-    private final BorderPane content;
-    private final TextField usernameField;
-    private final TextField emailField;
-    private final PasswordField passwordField;
-    private final PasswordField confirmPasswordField;
-    private final Button registerButton;
-    private final Button backToLoginButton;
-    private final Label statusLabel;
+
     private final ViewManager viewManager;
+    private StackPane root;
+    private TextField usernameField, emailField;
+    private PasswordField passwordField, confirmField;
+    private Label messageLabel;
 
     public RegisterView(ViewManager viewManager) {
         this.viewManager = viewManager;
-        content = new BorderPane();
-        content.getStyleClass().add("register-view");
-
-        // Header
-        VBox headerBox = new VBox(10);
-        headerBox.setAlignment(Pos.CENTER);
-        headerBox.setPadding(new Insets(40, 20, 20, 20));
-
-        Label titleLabel = new Label("Virtual Campus Hub");
-        titleLabel.getStyleClass().add("register-title");
-        titleLabel.setFont(Font.font("Inter", FontWeight.BOLD, 32));
-
-        Label subtitleLabel = new Label("Créer un nouveau compte");
-        subtitleLabel.getStyleClass().add("register-subtitle");
-        subtitleLabel.setFont(Font.font("Inter", FontWeight.NORMAL, 16));
-
-        headerBox.getChildren().addAll(titleLabel, subtitleLabel);
-
-        // Register Form
-        VBox formBox = new VBox(20);
-        formBox.setAlignment(Pos.CENTER);
-        formBox.setPadding(new Insets(40, 60, 40, 60));
-        formBox.setMaxWidth(400);
-        formBox.getStyleClass().add("register-form");
-
-        // Username field
-        VBox usernameBox = new VBox(8);
-        usernameBox.setAlignment(Pos.CENTER_LEFT);
-
-        Label usernameLabel = new Label("Nom d'utilisateur");
-        usernameLabel.getStyleClass().add("register-label");
-        usernameLabel.setFont(Font.font("Inter", FontWeight.MEDIUM, 14));
-
-        usernameField = new TextField();
-        usernameField.setPromptText("Choisissez un nom d'utilisateur");
-        usernameField.getStyleClass().add("register-input");
-        usernameField.setPrefWidth(300);
-
-        usernameBox.getChildren().addAll(usernameLabel, usernameField);
-
-        // Email field
-        VBox emailBox = new VBox(8);
-        emailBox.setAlignment(Pos.CENTER_LEFT);
-
-        Label emailLabel = new Label("Adresse email");
-        emailLabel.getStyleClass().add("register-label");
-        emailLabel.setFont(Font.font("Inter", FontWeight.MEDIUM, 14));
-
-        emailField = new TextField();
-        emailField.setPromptText("votre.email@exemple.com");
-        emailField.getStyleClass().add("register-input");
-        emailField.setPrefWidth(300);
-
-        emailBox.getChildren().addAll(emailLabel, emailField);
-
-        // Password field
-        VBox passwordBox = new VBox(8);
-        passwordBox.setAlignment(Pos.CENTER_LEFT);
-
-        Label passwordLabel = new Label("Mot de passe");
-        passwordLabel.getStyleClass().add("register-label");
-        passwordLabel.setFont(Font.font("Inter", FontWeight.MEDIUM, 14));
-
-        passwordField = new PasswordField();
-        passwordField.setPromptText("Créez un mot de passe sécurisé");
-        passwordField.getStyleClass().add("register-input");
-        passwordField.setPrefWidth(300);
-
-        passwordBox.getChildren().addAll(passwordLabel, passwordField);
-
-        // Confirm Password field
-        VBox confirmPasswordBox = new VBox(8);
-        confirmPasswordBox.setAlignment(Pos.CENTER_LEFT);
-
-        Label confirmPasswordLabel = new Label("Confirmer le mot de passe");
-        confirmPasswordLabel.getStyleClass().add("register-label");
-        confirmPasswordLabel.setFont(Font.font("Inter", FontWeight.MEDIUM, 14));
-
-        confirmPasswordField = new PasswordField();
-        confirmPasswordField.setPromptText("Confirmez votre mot de passe");
-        confirmPasswordField.getStyleClass().add("register-input");
-        confirmPasswordField.setPrefWidth(300);
-
-        confirmPasswordBox.getChildren().addAll(confirmPasswordLabel, confirmPasswordField);
-
-        // Buttons
-        registerButton = new Button("Créer un compte");
-        registerButton.getStyleClass().add("register-button");
-        registerButton.setPrefWidth(300);
-        registerButton.setPrefHeight(45);
-
-        backToLoginButton = new Button("← Retour à la connexion");
-        backToLoginButton.getStyleClass().add("back-button");
-        backToLoginButton.setPrefWidth(300);
-        backToLoginButton.setPrefHeight(35);
-
-        // Status label
-        statusLabel = new Label("");
-        statusLabel.getStyleClass().add("register-status");
-        statusLabel.setFont(Font.font("Inter", FontWeight.NORMAL, 12));
-
-        formBox.getChildren().addAll(usernameBox, emailBox, passwordBox, confirmPasswordBox,
-                                   registerButton, backToLoginButton, statusLabel);
-
-        // Center container
-        VBox centerContainer = new VBox();
-        centerContainer.setAlignment(Pos.CENTER);
-        centerContainer.getChildren().add(formBox);
-
-        content.setTop(headerBox);
-        content.setCenter(centerContainer);
-
-        // Event handlers
-        setupEventHandlers();
+        buildUI();
     }
 
-    private void setupEventHandlers() {
-        registerButton.setOnAction(e -> attemptRegistration());
+    private void buildUI() {
+        root = new StackPane();
+        root.setStyle("-fx-background-color: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);");
 
-        backToLoginButton.setOnAction(e -> viewManager.showLogin());
+        Circle c1 = new Circle(200);
+        c1.setFill(Color.web("#FF6584", 0.07));
+        c1.setTranslateX(350);
+        c1.setTranslateY(-200);
 
-        // Real-time validation
-        usernameField.textProperty().addListener((obs, oldText, newText) -> {
-            updateRegisterButtonState();
-        });
+        Circle c2 = new Circle(160);
+        c2.setFill(Color.web("#6C63FF", 0.07));
+        c2.setTranslateX(-350);
+        c2.setTranslateY(200);
 
-        emailField.textProperty().addListener((obs, oldText, newText) -> {
-            updateRegisterButtonState();
-        });
+        VBox card = new VBox(16);
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new Insets(45, 60, 45, 60));
+        card.setMaxWidth(460);
+        card.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.05);
+            -fx-background-radius: 24;
+            -fx-border-color: rgba(255,255,255,0.12);
+            -fx-border-radius: 24;
+            -fx-border-width: 1;
+            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 40, 0, 0, 20);
+            """);
 
-        passwordField.textProperty().addListener((obs, oldText, newText) -> {
-            updateRegisterButtonState();
-        });
+        Label logo = new Label("🎓");
+        logo.setStyle("-fx-font-size: 40;");
 
-        confirmPasswordField.textProperty().addListener((obs, oldText, newText) -> {
-            updateRegisterButtonState();
-        });
+        Label title = new Label("Créer un compte");
+        title.setStyle("-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: white; -fx-font-family: 'Segoe UI';");
+
+        Label subtitle = new Label("Rejoignez Virtual Campus Hub");
+        subtitle.setStyle("-fx-font-size: 13; -fx-text-fill: rgba(255,255,255,0.6); -fx-font-family: 'Segoe UI';");
+
+        usernameField = createStyledField("👤  Nom d'utilisateur", false);
+        emailField = createStyledField("✉  Adresse email", false);
+        passwordField = (PasswordField) createStyledField("🔒  Mot de passe (min. 6 car.)", true);
+        confirmField = (PasswordField) createStyledField("🔒  Confirmer le mot de passe", true);
+
+        messageLabel = new Label();
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(340);
+        messageLabel.setAlignment(Pos.CENTER);
+        messageLabel.setStyle("-fx-font-size: 12; -fx-text-fill: #FF6B6B; -fx-font-family: 'Segoe UI';");
+
+        Button registerBtn = new Button("Créer mon compte");
+        registerBtn.setPrefWidth(340);
+        registerBtn.setPrefHeight(46);
+        registerBtn.setStyle("""
+            -fx-background-color: linear-gradient(to right, #FF6584, #e05574);
+            -fx-text-fill: white;
+            -fx-font-size: 14;
+            -fx-font-weight: bold;
+            -fx-background-radius: 12;
+            -fx-cursor: hand;
+            -fx-effect: dropshadow(gaussian, rgba(255,101,132,0.5), 15, 0, 0, 4);
+            """);
+        registerBtn.setOnAction(e -> handleRegister());
+
+        HBox loginBox = new HBox(6);
+        loginBox.setAlignment(Pos.CENTER);
+        Label hasAccount = new Label("Déjà un compte ?");
+        hasAccount.setStyle("-fx-text-fill: rgba(255,255,255,0.6); -fx-font-size: 12;");
+        Hyperlink loginLink = new Hyperlink("Se connecter");
+        loginLink.setStyle("-fx-text-fill: #6C63FF; -fx-font-size: 12; -fx-border-color: transparent;");
+        loginLink.setOnAction(e -> viewManager.showLogin());
+        loginBox.getChildren().addAll(hasAccount, loginLink);
+
+        card.getChildren().addAll(logo, title, subtitle, usernameField, emailField,
+                passwordField, confirmField, messageLabel, registerBtn, loginBox);
+
+        root.getChildren().addAll(c1, c2, card);
+
+        // Animation entrée
+        card.setTranslateY(30);
+        card.setOpacity(0);
+        ParallelTransition pt = new ParallelTransition(
+                slideIn(card), fadeInNode(card)
+        );
+        pt.setDelay(Duration.millis(100));
+        pt.play();
     }
 
-    private void updateRegisterButtonState() {
-        boolean hasUsername = !usernameField.getText().trim().isEmpty();
-        boolean hasEmail = !emailField.getText().trim().isEmpty() && isValidEmail(emailField.getText().trim());
-        boolean hasPassword = passwordField.getText().length() >= 6;
-        boolean passwordsMatch = passwordField.getText().equals(confirmPasswordField.getText());
-
-        registerButton.setDisable(!(hasUsername && hasEmail && hasPassword && passwordsMatch));
+    private TextField createStyledField(String prompt, boolean isPassword) {
+        TextField field = isPassword ? new PasswordField() : new TextField();
+        field.setPromptText(prompt);
+        field.setPrefHeight(44);
+        field.setPrefWidth(340);
+        field.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.08);
+            -fx-text-fill: white;
+            -fx-prompt-text-fill: rgba(255,255,255,0.4);
+            -fx-background-radius: 12;
+            -fx-border-color: rgba(255,255,255,0.15);
+            -fx-border-radius: 12;
+            -fx-border-width: 1;
+            -fx-padding: 0 16 0 16;
+            -fx-font-size: 13;
+            -fx-font-family: 'Segoe UI';
+            """);
+        return field;
     }
 
-    private boolean isValidEmail(String email) {
-        return email.contains("@") && email.contains(".") && email.length() >= 5;
+    private TranslateTransition slideIn(javafx.scene.Node node) {
+        TranslateTransition tt = new TranslateTransition(Duration.millis(500), node);
+        tt.setToY(0);
+        tt.setInterpolator(Interpolator.EASE_OUT);
+        return tt;
     }
 
-    private void attemptRegistration() {
+    private FadeTransition fadeInNode(javafx.scene.Node node) {
+        FadeTransition ft = new FadeTransition(Duration.millis(500), node);
+        ft.setToValue(1);
+        return ft;
+    }
+
+    private void handleRegister() {
         String username = usernameField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
+        String confirm = confirmField.getText();
 
-        // Validation côté client
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            showStatus("Veuillez remplir tous les champs", Color.ORANGE);
+        if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
+            showMessage("❌ Veuillez remplir tous les champs.", false);
             return;
         }
-
-        if (username.length() < 3) {
-            showStatus("Le nom d'utilisateur doit contenir au moins 3 caractères", Color.ORANGE);
-            return;
-        }
-
-        if (!isValidEmail(email)) {
-            showStatus("Veuillez entrer une adresse email valide", Color.ORANGE);
-            return;
-        }
-
         if (password.length() < 6) {
-            showStatus("Le mot de passe doit contenir au moins 6 caractères", Color.ORANGE);
+            showMessage("❌ Le mot de passe doit comporter au moins 6 caractères.", false);
+            return;
+        }
+        if (!password.equals(confirm)) {
+            showMessage("❌ Les mots de passe ne correspondent pas.", false);
+            return;
+        }
+        if (!email.contains("@")) {
+            showMessage("❌ Format d'email invalide.", false);
             return;
         }
 
-        if (!password.equals(confirmPasswordField.getText())) {
-            showStatus("Les mots de passe ne correspondent pas", Color.ORANGE);
-            return;
-        }
-
-        // Désactiver le bouton pendant le traitement
-        registerButton.setDisable(true);
-        registerButton.setText("Création du compte...");
-        showStatus("Création du compte en cours...", Color.BLUE);
-
-        // Traitement en arrière-plan
-        new Thread(() -> {
-            try {
-                // Vérifier la connexion à la base de données
-                if (!DatabaseConnection.testConnection()) {
-                    javafx.application.Platform.runLater(() -> {
-                        showStatus("Erreur de connexion à la base de données", Color.RED);
-                        registerButton.setDisable(false);
-                        registerButton.setText("Créer un compte");
-                    });
-                    return;
-                }
-
-                // Vérifier si l'email existe déjà
-                if (UserDAO.emailExists(email)) {
-                    javafx.application.Platform.runLater(() -> {
-                        showStatus("Cette adresse email est déjà utilisée", Color.ORANGE);
-                        registerButton.setDisable(false);
-                        registerButton.setText("Créer un compte");
-                    });
-                    return;
-                }
-
-                // Vérifier si le nom d'utilisateur existe déjà
-                if (UserDAO.usernameExists(username)) {
-                    javafx.application.Platform.runLater(() -> {
-                        showStatus("Ce nom d'utilisateur est déjà pris", Color.ORANGE);
-                        registerButton.setDisable(false);
-                        registerButton.setText("Créer un compte");
-                    });
-                    return;
-                }
-
-                // Simuler un délai de traitement
-                Thread.sleep(1500);
-
-                // Enregistrer l'utilisateur
-                boolean success = UserDAO.registerUser(username, email, password);
-
-                javafx.application.Platform.runLater(() -> {
-                    if (success) {
-                        showStatus("Compte créé avec succès ! Vous pouvez maintenant vous connecter.", Color.GREEN);
-                        registerButton.setText("✓ Compte créé");
-
-                        // Animation de succès
-                        animateSuccess();
-
-                        // Rediriger vers la connexion après 2 secondes
-                        new Thread(() -> {
-                            try {
-                                Thread.sleep(2000);
-                                javafx.application.Platform.runLater(() -> {
-                                    viewManager.showLogin();
-                                });
-                            } catch (InterruptedException ex) {
-                                // Ignorer
-                            }
-                        }).start();
-
-                    } else {
-                        showStatus("Erreur lors de la création du compte", Color.RED);
-                        registerButton.setDisable(false);
-                        registerButton.setText("Créer un compte");
-                    }
-                });
-
-            } catch (InterruptedException e) {
-                javafx.application.Platform.runLater(() -> {
-                    showStatus("Opération interrompue", Color.ORANGE);
-                    registerButton.setDisable(false);
-                    registerButton.setText("Créer un compte");
-                });
+        boolean success;
+        if (DatabaseConnection.isConnected()) {
+            if (UserDAO.emailExists(email)) {
+                showMessage("❌ Cet email est déjà utilisé.", false);
+                return;
             }
-        }).start();
+            if (UserDAO.usernameExists(username)) {
+                showMessage("❌ Ce nom d'utilisateur est déjà pris.", false);
+                return;
+            }
+            success = UserDAO.registerUser(username, email, password);
+        } else {
+            // Mode démo : simuler succès
+            success = true;
+            showMessage("⚠️  Mode démo : compte simulé (DB hors ligne).", true);
+        }
+
+        if (success) {
+            showMessage("✅ Compte créé avec succès ! Redirection...", true);
+            PauseTransition pause = new PauseTransition(Duration.millis(1200));
+            pause.setOnFinished(e -> viewManager.showLogin());
+            pause.play();
+        } else {
+            showMessage("❌ Erreur lors de la création du compte.", false);
+        }
     }
 
-    private void showStatus(String message, Color color) {
-        statusLabel.setText(message);
-        statusLabel.setTextFill(color);
-
-        // Animation du message de statut
-        FadeTransition ft = new FadeTransition(Duration.millis(300), statusLabel);
-        ft.setFromValue(0.0);
-        ft.setToValue(1.0);
-        ft.play();
+    private void showMessage(String msg, boolean success) {
+        messageLabel.setText(msg);
+        messageLabel.setStyle("-fx-font-size: 12; -fx-font-family: 'Segoe UI'; -fx-text-fill: "
+                + (success ? "#43E97B" : "#FF6B6B") + ";");
     }
 
-    private void animateSuccess() {
-        // Animation de succès
-        FadeTransition ft = new FadeTransition(Duration.millis(500), content);
-        ft.setFromValue(1.0);
-        ft.setToValue(0.95);
-        ft.setAutoReverse(true);
-        ft.setCycleCount(2);
-        ft.play();
-    }
-
-    public BorderPane getContent() {
-        return content;
-    }
+    public StackPane getView() { return root; }
 }
