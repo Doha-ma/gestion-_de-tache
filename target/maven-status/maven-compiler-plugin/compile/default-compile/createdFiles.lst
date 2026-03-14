@@ -1,0 +1,17 @@
+com\virtualcampushub\ProfileView.class
+com\virtualcampushub\ViewManager.class
+com\virtualcampushub\TopBar.class
+com\virtualcampushub\EventsView.class
+com\virtualcampushub\ChatView$ChatMessage.class
+com\virtualcampushub\CoursesView.class
+com\virtualcampushub\Sidebar.class
+com\virtualcampushub\Main.class
+com\virtualcampushub\Sidebar$Section.class
+com\virtualcampushub\ChatView$1.class
+com\virtualcampushub\Sidebar$SectionItem.class
+module-info.class
+com\virtualcampushub\ChatView.class
+com\virtualcampushub\CoursesView$Course.class
+com\virtualcampushub\EventsView$EventItem.class
+com\virtualcampushub\DashboardView.class
+com\virtualcampushub\EventsView$1.class
