@@ -12,7 +12,7 @@ public class RegisterView {
 
     private final ViewManager viewManager;
     private StackPane root;
-    private TextField usernameField, emailField;
+    private TextField usernameField, emailField, fullNameField;
     private PasswordField passwordField, confirmField;
     private Label messageLabel;
 
@@ -23,7 +23,7 @@ public class RegisterView {
 
     private void buildUI() {
         root = new StackPane();
-        root.setStyle("-fx-background-color: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);");
+        root.setStyle("-fx-background-color: linear-gradient(to bottom right, #0f0c29 0%, #302b63 50%, #24243e 100%);");
 
         Circle c1 = new Circle(200);
         c1.setFill(Color.web("#FF6584", 0.07));
@@ -59,6 +59,7 @@ public class RegisterView {
 
         usernameField = createStyledField("👤  Nom d'utilisateur", false);
         emailField = createStyledField("✉  Adresse email", false);
+        fullNameField = createStyledField("👤  Nom complet (optionnel)", false);
         passwordField = (PasswordField) createStyledField("🔒  Mot de passe (min. 6 car.)", true);
         confirmField = (PasswordField) createStyledField("🔒  Confirmer le mot de passe", true);
 
@@ -91,7 +92,7 @@ public class RegisterView {
         loginLink.setOnAction(e -> viewManager.showLogin());
         loginBox.getChildren().addAll(hasAccount, loginLink);
 
-        card.getChildren().addAll(logo, title, subtitle, usernameField, emailField,
+        card.getChildren().addAll(logo, title, subtitle, usernameField, emailField, fullNameField,
                 passwordField, confirmField, messageLabel, registerBtn, loginBox);
 
         root.getChildren().addAll(c1, c2, card);
@@ -142,6 +143,7 @@ public class RegisterView {
     private void handleRegister() {
         String username = usernameField.getText().trim();
         String email = emailField.getText().trim();
+        String fullName = fullNameField.getText().trim();
         String password = passwordField.getText();
         String confirm = confirmField.getText();
 
@@ -172,7 +174,7 @@ public class RegisterView {
                 showMessage("❌ Ce nom d'utilisateur est déjà pris.", false);
                 return;
             }
-            success = UserDAO.registerUser(username, email, password);
+            success = UserDAO.registerUser(username, email, password, fullName);
         } else {
             // Mode démo : simuler succès
             success = true;

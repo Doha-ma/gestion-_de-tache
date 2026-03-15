@@ -130,7 +130,7 @@ public class ViewManager {
 
     private void switchCenter(Node newContent) {
         if (mainLayout.getCenter() != null) {
-            Node old = (Node) mainLayout.getCenter();
+            Node old = mainLayout.getCenter();
             FadeTransition fadeOut = new FadeTransition(Duration.millis(150), old);
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0.0);

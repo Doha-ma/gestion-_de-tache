@@ -27,7 +27,7 @@ public class LoginView {
         root.getStyleClass().add("auth-root");
 
         // Fond avec gradient
-        root.setStyle("-fx-background-color: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);");
+        root.setStyle("-fx-background-color: linear-gradient(to bottom right, #0f0c29 0%, #302b63 50%, #24243e 100%);");
 
         // Cercles décoratifs en fond
         Circle c1 = new Circle(250);
@@ -186,7 +186,7 @@ public class LoginView {
 
     private void handleLogin() {
         String email = emailField.getText().trim();
-        String password = passwordField.getText();
+        String password = passwordField.getText().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
             showMessage("Veuillez remplir tous les champs.", false);
@@ -211,9 +211,20 @@ public class LoginView {
             viewManager.setCurrentUserId(userId);
             showMessage("✅ Connexion réussie ! Bienvenue " + username, true);
 
-            // Transition après 800ms
+            // Transition fluide vers le dashboard
             PauseTransition pause = new PauseTransition(Duration.millis(800));
-            pause.setOnFinished(e -> viewManager.showDashboard());
+            pause.setOnFinished(e -> {
+                // Animation de sortie de la carte de login
+                VBox card = (VBox) root.getChildren().get(3); // La carte est le 4ème enfant
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(300), card);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(ev -> {
+                    // Maintenant on peut appeler showDashboard en toute sécurité
+                    viewManager.showDashboard();
+                });
+                fadeOut.play();
+            });
             pause.play();
         } else {
             showMessage("❌ Email ou mot de passe incorrect.", false);

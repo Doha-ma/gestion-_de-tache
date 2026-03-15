@@ -44,7 +44,7 @@ public class ProfileView {
         VBox card = new VBox(20);
         card.setPadding(new Insets(32));
         card.setStyle("""
-            -fx-background-color: linear-gradient(135deg, #1a1929, #252436);
+            -fx-background-color: linear-gradient(to bottom right, #1a1929, #252436);
             -fx-background-radius: 20;
             -fx-border-color: rgba(108,99,255,0.2);
             -fx-border-radius: 20;

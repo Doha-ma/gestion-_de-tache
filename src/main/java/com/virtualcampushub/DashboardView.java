@@ -211,6 +211,7 @@ public class DashboardView {
     private VBox buildProgressChart() {
         VBox card = new VBox(16);
         card.setPadding(new Insets(24));
+        card.setMaxWidth(Region.USE_PREF_SIZE); // Prevent infinite width
         card.setStyle("""
             -fx-background-color: #1e1d2e;
             -fx-background-radius: 16;
@@ -226,8 +227,11 @@ public class DashboardView {
 
         // Canvas responsive via listener
         card.widthProperty().addListener((obs, old, width) -> {
-            canvas.setWidth(width.doubleValue() - 48);
-            drawChart(canvas, weeks, values);
+            double w = Math.max(0, Math.min(width.doubleValue() - 48, 2000)); // Clamp to reasonable range
+            canvas.setWidth(w);
+            if (w > 0) {
+                drawChart(canvas, weeks, values);
+            }
         });
 
         // Légende

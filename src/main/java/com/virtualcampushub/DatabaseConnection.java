@@ -12,24 +12,28 @@ public class DatabaseConnection {
     private static final String PASSWORD = ""; // Change selon ta config MySQL
 
     private static Connection connection = null;
+    /** Lock for atomic check-then-act on {@link #connection}; avoids duplicate connections under concurrency. */
+    private static final Object connectionLock = new Object();
 
     public static Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                connection = DriverManager.getConnection(URL, USER, PASSWORD);
-                System.out.println("✅ Connexion MySQL établie avec succès.");
-            } catch (ClassNotFoundException e) {
-                System.err.println("❌ Driver MySQL introuvable : " + e.getMessage());
-                throw new SQLException("Driver MySQL manquant", e);
-            } catch (SQLException e) {
-                System.err.println("❌ Erreur connexion MySQL : " + e.getMessage());
-                System.err.println("   → Vérifiez que MySQL est démarré sur le port 3306");
-                System.err.println("   → Vérifiez les identifiants USER/PASSWORD dans DatabaseConnection.java");
-                throw e;
+        synchronized (connectionLock) {
+            if (connection == null || connection.isClosed()) {
+                try {
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    connection = DriverManager.getConnection(URL, USER, PASSWORD);
+                    System.out.println("✅ Connexion MySQL établie avec succès.");
+                } catch (ClassNotFoundException e) {
+                    System.err.println("❌ Driver MySQL introuvable : " + e.getMessage());
+                    throw new SQLException("Driver MySQL manquant", e);
+                } catch (SQLException e) {
+                    System.err.println("❌ Erreur connexion MySQL : " + e.getMessage());
+                    System.err.println("   → Vérifiez que MySQL est démarré sur le port 3306");
+                    System.err.println("   → Vérifiez les identifiants USER/PASSWORD dans DatabaseConnection.java");
+                    throw e;
+                }
             }
+            return connection;
         }
-        return connection;
     }
 
     /**
@@ -102,21 +106,30 @@ public class DatabaseConnection {
     }
 
     public static boolean isConnected() {
-        try {
-            return connection != null && !connection.isClosed() && connection.isValid(2);
-        } catch (SQLException e) {
-            return false;
+        synchronized (connectionLock) {
+            try {
+                return connection != null && !connection.isClosed() && connection.isValid(2);
+            } catch (SQLException e) {
+                return false;
+            }
         }
     }
 
     public static void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("🔌 Connexion MySQL fermée.");
+        synchronized (connectionLock) {
+            try {
+                if (connection != null && !connection.isClosed()) {
+                    connection.close();
+                    connection = null;
+                    System.out.println("🔌 Connexion MySQL fermée.");
+                }
+            } catch (SQLException e) {
+                System.err.println("Erreur fermeture connexion : " + e.getMessage());
             }
-        } catch (SQLException e) {
-            System.err.println("Erreur fermeture connexion : " + e.getMessage());
         }
     }
+    public static void main(String[] args) {
+    initializeDatabase();
+}
+
 }

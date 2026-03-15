@@ -10,18 +10,30 @@ public class UserDAO {
     // AUTHENTIFICATION
     // ─────────────────────────────────────────
 
-    public static boolean registerUser(String username, String email, String password) {
+    public static boolean registerUser(String username, String email, String password, String fullName) {
         if (emailExists(email) || usernameExists(username)) return false;
+
+        System.out.println("Attempting to register user: " + username + ", email: " + email + ", fullName: " + fullName);
 
         String sql = "INSERT INTO users (username, email, password, full_name) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            if (!conn.isValid(5)) {
+                System.err.println("Connection invalid before insert");
+                return false;
+            }
+
             stmt.setString(1, username);
             stmt.setString(2, email);
             stmt.setString(3, hashPassword(password));
-            stmt.setString(4, username);
-            stmt.executeUpdate();
+            stmt.setString(4, fullName != null && !fullName.isEmpty() ? fullName : username);
+            int rows = stmt.executeUpdate();
+            System.out.println("Rows affected by insert: " + rows);
+            if (rows == 0) {
+                System.err.println("Insert failed: no rows affected");
+                return false;
+            }
             System.out.println("✅ Utilisateur enregistré : " + username);
             return true;
 
@@ -32,6 +44,9 @@ public class UserDAO {
     }
 
     public static boolean loginUser(String email, String password) {
+        System.out.println("=== LOGIN ATTEMPT ===");
+        System.out.println("📧 Email being checked: " + email);
+
         String sql = "SELECT password FROM users WHERE email = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -39,12 +54,26 @@ public class UserDAO {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
+                System.out.println("✅ User found in database");
                 String storedHash = rs.getString("password");
-                return storedHash.equals(hashPassword(password));
+                System.out.println("🔐 Stored hash: " + storedHash);
+
+                String computedHash = hashPassword(password);
+                System.out.println("🔐 Computed hash: " + computedHash);
+
+                boolean isMatch = storedHash.equals(computedHash);
+                System.out.println("🔍 Hash comparison result: " + (isMatch ? "✅ MATCH" : "❌ NO MATCH"));
+                System.out.println("=== END LOGIN ATTEMPT ===\n");
+
+                return isMatch;
+            } else {
+                System.out.println("❌ User not found in database");
+                System.out.println("=== END LOGIN ATTEMPT ===\n");
             }
 
         } catch (SQLException e) {
             System.err.println("❌ Erreur connexion : " + e.getMessage());
+            System.out.println("=== END LOGIN ATTEMPT ===\n");
         }
         return false;
     }
@@ -97,7 +126,12 @@ public class UserDAO {
 
             stmt.setString(1, value);
             ResultSet rs = stmt.executeQuery();
-            if (rs.next()) return rs.getInt(1) > 0;
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                String field = sql.contains("email") ? "email" : "username";
+                System.out.println("Count for " + field + " '" + value + "': " + count);
+                return count > 0;
+            }
 
         } catch (SQLException e) {
             System.err.println("❌ Erreur checkExists : " + e.getMessage());
